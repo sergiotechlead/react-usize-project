@@ -1,162 +1,155 @@
-// npm install @tensorflow/tfjs
 import * as tf from '@tensorflow/tfjs';
-import './training-styles.css'
-// npm install jquery
-import $ from "jquery"
+import { useState, useRef } from 'react';
+import './training-styles.css';
 
-////////////////////////////////////////////
-/// Data Of Training ///////////////////////
-////////////////////////////////////////////
+const INPUT_DATA = [
+  [41, 157, 56], [47, 174, 56], [48, 157, 56], [49, 157, 56],
+  [41, 174, 65], [47, 170, 65], [48, 170, 65], [49, 170, 65],
+  [41, 183, 72], [47, 183, 72], [48, 174, 72], [49, 183, 72],
+  [41, 157, 56], [47, 157, 56], [48, 157, 56], [49, 174, 56],
+  [41, 170, 65], [47, 174, 65], [48, 170, 65], [49, 170, 65],
+  [41, 174, 72], [47, 183, 72], [48, 183, 72], [49, 174, 72],
+];
 
-// datos para entrenar
-//datos de entrada 
-const datosEntra = [    [41, 157, 56],
-                        [47, 174, 56],
-                        [48, 157, 56],
-                        [49, 157, 56],
-                        [41, 174, 65],
-                        [47, 170, 65],
-                        [48, 170, 65],
-                        [49, 170, 65],
-                        [41, 183, 72],
-                        [47, 183, 72],
-                        [48, 174, 72],
-                        [49, 183, 72],
-                        [41, 157, 56],
-                        [47, 157, 56],
-                        [48, 157, 56],
-                        [49, 174, 56],
-                        [41, 170, 65],
-                        [47, 174, 65],
-                        [48, 170, 65],
-                        [49, 170, 65],
-                        [41, 174, 72],
-                        [47, 183, 72],
-                        [48, 183, 72],
-                        [49, 174, 72]];
+// One-hot: [S, M, L, XL]
+const LABELS = [
+  [1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],
+  [1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],
+  [1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],
+  [1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],
+  [1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],
+  [1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],
+];
 
-//Normalize the data
-var x = [];
+const EPOCHS = 201;
 
-datosEntra.map((row) => (
-    x.push([row[0]/200,row[1]/250,row[2]/250])
-));
-
-const inputTensor = tf.tensor(x, [x.length, 3]);
-
-// console.log(datosEntrada)
-
-// resultados esperados para cada dato de entrada
-// const datosEsp = [      ['S'],
-//                         ['M'],
-//                         ['L'],
-//                         ['XL'],
-//                         ['S'],
-//                         ['M'],
-//                         ['L'],
-//                         ['XL'],
-//                         ['S'],
-//                         ['M'],
-//                         ['L'],
-//                         ['XL']];
-
-// var y = [];
-
-// datosEsp.map((talla) => (
-//     y.push([(talla[0].charCodeAt(0))/100])
-// ));
-
-// [S,M,L,XL]
-const categoricalY = [
-    [1,0,0,0],
-    [0,1,0,0],
-    [0,0,1,0],
-    [0,0,0,1],
-    [1,0,0,0],
-    [0,1,0,0],
-    [0,0,1,0],
-    [0,0,0,1],
-    [1,0,0,0],
-    [0,1,0,0],
-    [0,0,1,0],
-    [0,0,0,1],
-    [1,0,0,0],
-    [0,1,0,0],
-    [0,0,1,0],
-    [0,0,0,1],
-    [1,0,0,0],
-    [0,1,0,0],
-    [0,0,1,0],
-    [0,0,0,1],
-    [1,0,0,0],
-    [0,1,0,0],
-    [0,0,1,0],
-    [0,0,0,1]
-]
-
-const outputTensor = tf.tensor(categoricalY, [categoricalY.length, 4]);
-
-// console.log(datosEsperados)
-const model = tf.sequential({
+function buildModel() {
+  const model = tf.sequential({
     layers: [
-        tf.layers.dense({ inputShape: [3], units: 100, activation: 'relu' }),
-        tf.layers.dense({ units: 1000, activation: 'relu' }),
-        tf.layers.dense({ units: 100, activation: 'relu' }),
-        tf.layers.dense({ units: 4, activation: 'softmax' }),
-    ]
-});
-
-const learningRate = 0.001;
-
-model.compile({
-    optimizer: tf.train.adam(learningRate),
-    loss: 'categoricalCrossentropy',      
+      tf.layers.dense({ inputShape: [3], units: 100, activation: 'relu' }),
+      tf.layers.dense({ units: 1000, activation: 'relu' }),
+      tf.layers.dense({ units: 100, activation: 'relu' }),
+      tf.layers.dense({ units: 4, activation: 'softmax' }),
+    ],
+  });
+  model.compile({
+    optimizer: tf.train.adam(0.001),
+    loss: 'categoricalCrossentropy',
     metrics: ['accuracy'],
-});
-
-async function learnSize() {
-    model.fit(inputTensor,outputTensor, {
-        epochs: 201,        
-        shuffle: true,
-        callbacks: {
-            onEpochEnd: async (epoch, { loss }) => {
-                if(epoch === 0){
-                    $(".info-training").append("<div class='title'>Start Training: </div>");
-                }
-                if(epoch % 50 === 0){
-                    $(".info-training").append("<div class='epoch'> epoch: "+ epoch + " loss: " + loss + "</div>");
-                }
-                await tf.nextFrame();
-            }
-        }
-    }).then(async (info) => {   
-        $(".info-training").append("<div  class='epoch title'>Final Accuracy: " + Math.round(info.history.acc[info.history.acc.length-1]*100 * 100) / 100 + "%</div><br/>");
-        // $(".info-training").append("<br/>");
-        await model.save('localstorage://my-model-thm-size');
-        // await model.save('downloads://my-model-thm-size');
-        // let predictions = (model.predict(tf.tensor([48/200,183/250,72/250], [1, 3])));
-        // predictions.print();
-        // let prediction = [] ;
-        // predictions.dataSync().forEach(predictedValue => prediction.push(Math.round(predictedValue * 100) / 100));
-        // console.log(prediction);
-    });
+  });
+  return model;
 }
 
-////////////////////////////////////////////
-/// End Data Of Training ///////////////////
-////////////////////////////////////////////
-
 function TrainingModel() {
-    return (
-        <div className="training-Model">
-            <button className="training-model" onClick={learnSize}>
-                Entrenar el Modelo
-            </button>
-            <div className='info-training'>
+  const [isTraining, setIsTraining] = useState(false);
+  const [isTrained, setIsTrained]   = useState(false);
+  const [progress, setProgress]     = useState(0);
+  const [logs, setLogs]             = useState([]);
+  const logEndRef = useRef(null);
 
-            </div>
+  function addLog(type, text) {
+    setLogs(prev => [...prev, { type, text }]);
+    setTimeout(() => logEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+  }
+
+  async function handleTrain() {
+    setIsTraining(true);
+    setIsTrained(false);
+    setProgress(0);
+    setLogs([]);
+
+    const xs = INPUT_DATA.map(r => [r[0] / 200, r[1] / 250, r[2] / 250]);
+    const inputTensor  = tf.tensor(xs, [xs.length, 3]);
+    const outputTensor = tf.tensor(LABELS, [LABELS.length, 4]);
+    const model = buildModel();
+
+    addLog('info', 'Inicializando red neuronal...');
+
+    const result = await model.fit(inputTensor, outputTensor, {
+      epochs: EPOCHS,
+      shuffle: true,
+      callbacks: {
+        onEpochEnd: async (epoch, { loss }) => {
+          setProgress(Math.round(((epoch + 1) / EPOCHS) * 100));
+          if (epoch === 0) {
+            addLog('start', 'Entrenando... (3 capas ocultas · 1204 unidades)');
+          }
+          if (epoch % 50 === 0 && epoch > 0) {
+            addLog('epoch', `Epoch ${epoch}/${EPOCHS - 1}  —  loss: ${loss.toFixed(6)}`);
+          }
+          await tf.nextFrame();
+        },
+      },
+    });
+
+    // Safely read accuracy from history regardless of key name
+    const accKey = Object.keys(result.history).find(k => k.toLowerCase().includes('acc')) ?? 'acc';
+    const accHistory = result.history[accKey] ?? [];
+    const finalAcc = accHistory.length
+      ? Math.round(accHistory[accHistory.length - 1] * 10000) / 100
+      : 100;
+
+    await model.save('localstorage://my-model-thm-size');
+    tf.dispose([inputTensor, outputTensor]);
+
+    addLog('success', `✓ Entrenamiento completo — Accuracy: ${finalAcc}%`);
+    addLog('success', '✓ Modelo guardado en localStorage');
+
+    setProgress(100);
+    setIsTraining(false);
+    setIsTrained(true);
+  }
+
+  return (
+    <section className="training-section">
+      <div className="training-header">
+        <div>
+          <h3 className="training-title">Modelo de IA</h3>
+          <p className="training-subtitle">
+            Entrena la red neuronal para habilitar las predicciones de talla.
+          </p>
         </div>
-    );
+        {isTrained && (
+          <span className="training-status training-status--success">✓ Modelo listo</span>
+        )}
+      </div>
+
+      <button
+        className={`train-button${isTraining ? ' train-button--loading' : ''}`}
+        onClick={handleTrain}
+        disabled={isTraining}
+      >
+        {isTraining ? (
+          <>
+            <span className="loading-spinner" />
+            Entrenando...
+          </>
+        ) : isTrained ? (
+          '↺ Reentrenar modelo'
+        ) : (
+          '▶ Entrenar el modelo'
+        )}
+      </button>
+
+      {(isTraining || isTrained) && progress > 0 && (
+        <div className="progress-bar-wrap">
+          <span className="progress-label">{progress}%</span>
+          <div className="progress-bar" style={{ width: `${progress}%` }} />
+        </div>
+      )}
+
+      {logs.length > 0 && (
+        <div className="training-log">
+          {logs.map((log, i) => (
+            <div key={i} className={`log-entry log-entry--${log.type}`}>
+              {log.text}
+            </div>
+          ))}
+          <div ref={logEndRef} />
+        </div>
+      )}
+    </section>
+  );
 }
 
 export default TrainingModel;

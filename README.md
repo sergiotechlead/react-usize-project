@@ -1,70 +1,98 @@
-# Getting Started with Create React App
+# USize — AI Size Predictor
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React application that uses a TensorFlow.js neural network to predict clothing sizes based on body measurements. Built as a portfolio project demonstrating machine learning in the browser.
 
-## Available Scripts
+![USize Preview](https://img.shields.io/badge/React-18.3-61DAFB?logo=react&logoColor=white) ![TensorFlow.js](https://img.shields.io/badge/TensorFlow.js-4.x-FF6F00?logo=tensorflow&logoColor=white) ![Node](https://img.shields.io/badge/Node-20.x-339933?logo=nodedotjs&logoColor=white)
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **AI size prediction** — Feed-forward neural network trained in-browser using TensorFlow.js
+- **In-browser training** — No server required; model weights are persisted to `localStorage`
+- **Responsive dark UI** — Clean design with smooth animations and a modal overlay
+- **No jQuery** — Pure React state management throughout
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## How it works
 
-### `npm test`
+1. **Train the model** — Click "Entrenar el modelo" to train the neural network in your browser. It learns to classify body measurements (back width, height, weight) into sizes S / M / L / XL using categorical cross-entropy and the Adam optimizer.
+2. **Predict your size** — After training, open the predictor modal and enter your measurements. The model runs locally on your device.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Tech Stack
 
-### `npm run build`
+| Layer | Technology |
+|-------|-----------|
+| UI Framework | React 18.3 |
+| ML Engine | TensorFlow.js 4.x |
+| Bundler | Create React App (react-scripts 5) |
+| Styling | CSS with custom properties |
+| Runtime | Node 20 / npm 11 |
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Getting Started
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Prerequisites
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Node.js ≥ 20.0.0
+- npm ≥ 11.0.0
 
-### `npm run eject`
+### Install & run
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+npm install
+npm start
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+### Build for production
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```bash
+npm run build
+```
 
-## Learn More
+Output goes to the `build/` folder.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Neural Network Architecture
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```
+Input  [3]   →  back_width / 200, height / 250, weight / 250
+Dense  [100] →  ReLU
+Dense  [1000] → ReLU
+Dense  [100] →  ReLU
+Output [4]   →  Softmax  →  [S, M, L, XL]
+```
 
-### Code Splitting
+**Training config:** Adam (lr=0.001) · 201 epochs · categorical cross-entropy · shuffle
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+## Project Structure
 
-### Analyzing the Bundle Size
+```
+src/
+├── App/
+│   ├── App.js              # Root component — layout, modal, routing
+│   ├── App.css             # App-level styles
+│   └── files/
+│       └── styles-product.css  # Global CSS variables & reset
+├── UsizeForm/
+│   ├── index.js            # Measurement form & size result display
+│   └── UsizeForm.css
+├── TrainingModel/
+│   ├── index.js            # In-browser training UI (no jQuery)
+│   └── training-styles.css
+└── index.js                # React entry point
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+## Deployment
 
-### Making a Progressive Web App
+The app is configured for GitHub Pages deployment:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+npm run build
+# Deploy the build/ folder to GitHub Pages
+```
 
-### Advanced Configuration
+Live demo: [sergiotechlead.github.io/react-usize-project/build](https://sergiotechlead.github.io/react-usize-project/build/)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+## License
 
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+MIT — see [LICENSE](LICENSE) for details.

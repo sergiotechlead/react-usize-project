@@ -1,1 +1,182 @@
-body,.product,html{margin:0px;font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;background:#020914 !important;color:#e7edf3}body .container-info,.product .container-info,html .container-info{width:100%;margin:auto;max-width:300px;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center}body .ia-size-button,body .training-Model,body .info-training,body .form__section,.product .ia-size-button,.product .training-Model,.product .info-training,.product .form__section,html .ia-size-button,html .training-Model,html .info-training,html .form__section{width:100%;margin:auto;text-align:center;margin-top:20px;background:#020914 !important;color:#e7edf3}body .ia-size-button .beta,body .training-Model .beta,body .info-training .beta,body .form__section .beta,.product .ia-size-button .beta,.product .training-Model .beta,.product .info-training .beta,.product .form__section .beta,html .ia-size-button .beta,html .training-Model .beta,html .info-training .beta,html .form__section .beta{color:#e7edf3}body .React-Form span,.product .React-Form span,html .React-Form span{padding-left:10px;color:#ffffff;font-weight:600}body .React-Form button,.product .React-Form button,html .React-Form button{padding:10px;background:#53a0f8;font-weight:600;color:#ffffff;border-radius:25px}body div{background:#020914}form{width:90%;max-width:300px;padding:33px 40px;display:-webkit-box;display:-ms-flexbox;display:flex;-webkit-box-pack:center;-ms-flex-pack:center;justify-content:center;-webkit-box-align:center;-ms-flex-align:center;align-items:center;-webkit-box-orient:vertical;-webkit-box-direction:normal;-ms-flex-direction:column;flex-direction:column;background:#020914;border-radius:20px}label{text-align:center;font-weight:bold;font-size:20px;background:#020914;color:#e7edf3;margin-bottom:26px}.info-training{text-align:center;background:#020914;color:#e7edf3;border:2px solid #202329;border-radius:2px;-webkit-box-shadow:0px 5px 50px rgba(32,35,41,0.25);box-shadow:0px 5px 50px rgba(32,35,41,0.25);font-size:20px;padding:12px;height:auto;width:calc(100% - 25px)}.info-training div{color:#e7edf3}.info-training .title{font-weight:600}.info-training::-webkit-input-placeholder{color:#383232;font-size:14px;font-weight:400}.info-training:-ms-input-placeholder{color:#383232;font-size:14px;font-weight:400}.info-training::-ms-input-placeholder{color:#383232;font-size:14px;font-weight:400}textarea::-webkit-input-placeholder{color:#383232;font-size:14px;font-weight:400}textarea:-ms-input-placeholder{color:#383232;font-size:14px;font-weight:400}textarea::-ms-input-placeholder{color:#383232;font-size:14px;font-weight:400}textarea::placeholder{color:#383232;font-size:14px;font-weight:400}.training-model{padding:10px;background:#53a0f8;font-weight:600;color:#ffffff;border-radius:25px}
+/* ── Training Section ────────────────────────────────── */
+.training-section {
+  border: 1px solid var(--color-border-dim);
+  border-radius: var(--radius-lg);
+  background: var(--color-bg-elevated);
+  padding: 28px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.training-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.training-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+  letter-spacing: -0.2px;
+}
+
+.training-subtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
+.training-status {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  letter-spacing: 0.2px;
+}
+
+.training-status--success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  border: 1px solid rgba(93, 179, 93, 0.25);
+}
+
+/* ── Train Button ────────────────────────────────────── */
+.train-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: var(--color-accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+  align-self: flex-start;
+  letter-spacing: 0.2px;
+}
+
+.train-button:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+  box-shadow: 0 4px 16px rgba(83, 160, 248, 0.35);
+  transform: translateY(-1px);
+}
+
+.train-button:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.train-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.train-button--loading {
+  background: var(--color-bg-card);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}
+
+/* ── Loading Spinner (shared) ────────────────────────── */
+.loading-spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+/* ── Progress Bar ────────────────────────────────────── */
+.progress-bar-wrap {
+  position: relative;
+  height: 6px;
+  background: var(--color-border-dim);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-hover));
+  border-radius: var(--radius-full);
+  transition: width 0.4s ease;
+  box-shadow: 0 0 8px rgba(83, 160, 248, 0.4);
+}
+
+.progress-label {
+  position: absolute;
+  right: 0;
+  top: -18px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-accent);
+}
+
+/* ── Training Log ────────────────────────────────────── */
+.training-log {
+  border: 1px solid var(--color-border-dim);
+  border-radius: var(--radius-md);
+  background: rgba(2, 9, 20, 0.5);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  font-family: var(--font-mono);
+}
+
+.training-log::-webkit-scrollbar {
+  width: 4px;
+}
+
+.training-log::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.training-log::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+}
+
+.log-entry {
+  font-size: 12px;
+  line-height: 1.6;
+  padding: 1px 0;
+}
+
+.log-entry--info {
+  color: var(--color-text-muted);
+}
+
+.log-entry--start {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.log-entry--epoch {
+  color: var(--color-text-muted);
+}
+
+.log-entry--success {
+  color: var(--color-success);
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 680px) {
+  .training-section {
+    padding: 22px 20px;
+  }
+}

@@ -8,9 +8,9 @@ const SIZE_LABELS = ['S', 'M', 'L', 'XL'];
 // Maps each size to a position (%) on the fit-meter bar
 const SIZE_POSITIONS = { S: 12, M: 38, L: 62, XL: 88 };
 
-async function predictSize(back, height, weight) {
+async function predictSize(back, height, weight, age) {
   const model = await tf.loadLayersModel('localstorage://my-model-thm-size');
-  const input = tf.tensor([[back / 200, height / 250, weight / 250]], [1, 3]);
+  const input = tf.tensor([[back / 200, height / 250, weight / 250, age / 100]], [1, 4]);
   const output = model.predict(input);
   const values = Array.from(output.dataSync()).map(v => Math.round(v * 100) / 100);
   const maxIndex = values.indexOf(Math.max(...values));
@@ -67,12 +67,13 @@ function UsizeForm() {
     const back   = parseFloat(e.target.elements.espalda.value);
     const height = parseFloat(e.target.elements.altura.value);
     const weight = parseFloat(e.target.elements.peso.value);
+    const age    = parseFloat(e.target.elements.edad.value);
 
     setStep('loading');
     setErrorMsg('');
 
     try {
-      const size = await predictSize(back, height, weight);
+      const size = await predictSize(back, height, weight, age);
       setPredictedSize(size);
       setStep('result');
     } catch {
@@ -142,6 +143,23 @@ function UsizeForm() {
               required
             />
             <span className="field-unit">kg</span>
+          </div>
+        </div>
+
+        <div className="field-group">
+          <label className="field-label" htmlFor="edad">Edad</label>
+          <div className="field-input-wrap">
+            <input
+              id="edad"
+              type="number"
+              name="edad"
+              className="field-input"
+              placeholder="28"
+              min="15"
+              max="80"
+              required
+            />
+            <span className="field-unit">años</span>
           </div>
         </div>
 

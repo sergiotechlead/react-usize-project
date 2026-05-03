@@ -1,22 +1,8 @@
-import * as tf from '@tensorflow/tfjs';
 import { useState } from 'react';
+import { useModel } from '../context/ModelContext';
+import { predictSize, SIZE_POSITIONS } from '../ml/modelConfig';
 import svg from './up-arrow.min.svg';
 import './UsizeForm.css';
-
-const SIZE_LABELS = ['S', 'M', 'L', 'XL'];
-
-// Maps each size to a position (%) on the fit-meter bar
-const SIZE_POSITIONS = { S: 12, M: 38, L: 62, XL: 88 };
-
-async function predictSize(back, height, weight, age) {
-  const model = await tf.loadLayersModel('localstorage://my-model-thm-size');
-  const input = tf.tensor([[back / 200, height / 250, weight / 250, age / 100]], [1, 4]);
-  const output = model.predict(input);
-  const values = Array.from(output.dataSync()).map(v => Math.round(v * 100) / 100);
-  const maxIndex = values.indexOf(Math.max(...values));
-  tf.dispose([input, output]);
-  return SIZE_LABELS[maxIndex] ?? 'M';
-}
 
 function SizeMeter({ size }) {
   const position = SIZE_POSITIONS[size] ?? 50;
@@ -58,7 +44,8 @@ function SizeResult({ size, onBack }) {
 }
 
 function UsizeForm() {
-  const [step, setStep] = useState('form'); // 'form' | 'loading' | 'result' | 'error'
+  const { modelStatus } = useModel();
+  const [step, setStep] = useState('form');
   const [predictedSize, setPredictedSize] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -77,7 +64,7 @@ function UsizeForm() {
       setPredictedSize(size);
       setStep('result');
     } catch {
-      setErrorMsg('Modelo no encontrado. Por favor entrena el modelo primero.');
+      setErrorMsg('Error al cargar el modelo. Verifica que haya sido entrenado.');
       setStep('error');
     }
   }
@@ -85,6 +72,13 @@ function UsizeForm() {
   if (step === 'result') {
     return <SizeResult size={predictedSize} onBack={() => setStep('form')} />;
   }
+
+  const isModelReady  = modelStatus === 'ready';
+  const isLoading     = step === 'loading' || !isModelReady;
+  const submitLabel   = step === 'loading'        ? 'Prediciendo...'
+                      : modelStatus === 'checking' ? 'Verificando modelo...'
+                      : modelStatus === 'initializing' ? 'Inicializando IA...'
+                      : 'Predecir mi talla →';
 
   return (
     <div className="usize-form">
@@ -94,20 +88,19 @@ function UsizeForm() {
         <div className="form-error" role="alert">{errorMsg}</div>
       )}
 
+      {modelStatus === 'initializing' && (
+        <div className="form-info" role="status">
+          <span className="loading-spinner" />
+          Entrenando modelo base, esto toma unos segundos…
+        </div>
+      )}
+
       <form className="measurement-form" onSubmit={handleSubmit}>
         <div className="field-group">
           <label className="field-label" htmlFor="espalda">Ancho de espalda</label>
           <div className="field-input-wrap">
-            <input
-              id="espalda"
-              type="number"
-              name="espalda"
-              className="field-input"
-              placeholder="42"
-              min="30"
-              max="80"
-              required
-            />
+            <input id="espalda" type="number" name="espalda" className="field-input"
+              placeholder="42" min="30" max="80" required />
             <span className="field-unit">cm</span>
           </div>
         </div>
@@ -115,16 +108,8 @@ function UsizeForm() {
         <div className="field-group">
           <label className="field-label" htmlFor="altura">Altura</label>
           <div className="field-input-wrap">
-            <input
-              id="altura"
-              type="number"
-              name="altura"
-              className="field-input"
-              placeholder="170"
-              min="140"
-              max="220"
-              required
-            />
+            <input id="altura" type="number" name="altura" className="field-input"
+              placeholder="170" min="140" max="220" required />
             <span className="field-unit">cm</span>
           </div>
         </div>
@@ -132,16 +117,8 @@ function UsizeForm() {
         <div className="field-group">
           <label className="field-label" htmlFor="peso">Peso</label>
           <div className="field-input-wrap">
-            <input
-              id="peso"
-              type="number"
-              name="peso"
-              className="field-input"
-              placeholder="70"
-              min="40"
-              max="150"
-              required
-            />
+            <input id="peso" type="number" name="peso" className="field-input"
+              placeholder="70" min="40" max="150" required />
             <span className="field-unit">kg</span>
           </div>
         </div>
@@ -149,29 +126,16 @@ function UsizeForm() {
         <div className="field-group">
           <label className="field-label" htmlFor="edad">Edad</label>
           <div className="field-input-wrap">
-            <input
-              id="edad"
-              type="number"
-              name="edad"
-              className="field-input"
-              placeholder="28"
-              min="15"
-              max="80"
-              required
-            />
+            <input id="edad" type="number" name="edad" className="field-input"
+              placeholder="28" min="15" max="80" required />
             <span className="field-unit">años</span>
           </div>
         </div>
 
-        <button type="submit" className="btn-primary" disabled={step === 'loading'}>
-          {step === 'loading' ? (
-            <>
-              <span className="loading-spinner" />
-              Prediciendo...
-            </>
-          ) : (
-            'Predecir mi talla →'
-          )}
+        <button type="submit" className="btn-primary" disabled={isLoading}>
+          {isLoading ? (
+            <><span className="loading-spinner" />{submitLabel}</>
+          ) : submitLabel}
         </button>
       </form>
     </div>

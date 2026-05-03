@@ -1,16 +1,16 @@
 {
   "files": {
-    "main.css": "/react-usize-project/build/static/css/main.d7113aff.css",
-    "main.js": "/react-usize-project/build/static/js/main.072c3d86.js",
-    "static/js/787.0df1cb5b.chunk.js": "/react-usize-project/build/static/js/787.0df1cb5b.chunk.js",
+    "main.css": "/react-usize-project/build/static/css/main.1856fd6a.css",
+    "main.js": "/react-usize-project/build/static/js/main.9347d94e.js",
+    "static/js/496.eb1f2060.chunk.js": "/react-usize-project/build/static/js/496.eb1f2060.chunk.js",
     "index.html": "/react-usize-project/build/index.html",
     "static/media/up-arrow.min.svg": "/react-usize-project/build/static/media/up-arrow.min.10a19041bcc0a26b0692105977acff0a.svg",
-    "main.d7113aff.css.map": "/react-usize-project/build/static/css/main.d7113aff.css.map",
-    "main.072c3d86.js.map": "/react-usize-project/build/static/js/main.072c3d86.js.map",
-    "787.0df1cb5b.chunk.js.map": "/react-usize-project/build/static/js/787.0df1cb5b.chunk.js.map"
+    "main.1856fd6a.css.map": "/react-usize-project/build/static/css/main.1856fd6a.css.map",
+    "main.9347d94e.js.map": "/react-usize-project/build/static/js/main.9347d94e.js.map",
+    "496.eb1f2060.chunk.js.map": "/react-usize-project/build/static/js/496.eb1f2060.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.d7113aff.css",
-    "static/js/main.072c3d86.js"
+    "static/css/main.1856fd6a.css",
+    "static/js/main.9347d94e.js"
   ]
 }

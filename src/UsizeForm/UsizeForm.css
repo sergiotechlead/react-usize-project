@@ -126,6 +126,21 @@
   flex-shrink: 0;
 }
 
+/* ── Info Banner ─────────────────────────────────────── */
+.form-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-accent-dim);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--color-accent);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
 /* ── Error Alert ─────────────────────────────────────── */
 .form-error {
   background: var(--color-error-bg);

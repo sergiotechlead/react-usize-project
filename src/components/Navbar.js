@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBars, faXmark, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../context/AuthContext';
@@ -8,7 +8,17 @@ import './Navbar.css';
 export default function Navbar({ activePage }) {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [open, setOpen] = useState(false);
+
+  function scrollToSection(id) {
+    setOpen(false);
+    if (location.pathname === '/') {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/', { state: { scrollTo: id } });
+    }
+  }
 
   return (
     <nav className="navbar">
@@ -21,7 +31,11 @@ export default function Navbar({ activePage }) {
         </Link>
 
         <ul className={`navbar-links${open ? ' is-open' : ''}`}>
-          <li><a href="/#como-funciona" onClick={() => setOpen(false)}>Cómo funciona</a></li>
+          <li>
+            <button className="nav-scroll-btn" onClick={() => scrollToSection('como-funciona')}>
+              Cómo funciona
+            </button>
+          </li>
           <li>
             <Link to="/docs" className={activePage === 'docs' ? 'is-active' : ''} onClick={() => setOpen(false)}>
               Documentación

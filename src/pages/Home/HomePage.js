@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faPlay, faSpinner, faXmark, faRulerCombined,
@@ -101,7 +101,17 @@ function DemoModal({ onClose }) {
 
 export default function HomePage() {
   const { modelStatus } = useModel();
+  const location = useLocation();
   const [demoOpen, setDemoOpen] = useState(false);
+
+  useEffect(() => {
+    const id = location.state?.scrollTo;
+    if (!id) return;
+    const el = document.getElementById(id);
+    if (el) {
+      setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 80);
+    }
+  }, [location.state]);
 
   const modelReady = modelStatus === 'ready';
 

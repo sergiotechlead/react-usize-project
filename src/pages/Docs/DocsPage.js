@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBolt, faCode, faDatabase, faGear, faPuzzlePiece,
@@ -51,18 +51,20 @@ function Callout({ type, children }) {
 }
 
 export default function DocsPage() {
+  const location = useLocation();
   const [active, setActive] = useState('intro');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
-    const hash = window.location.hash.replace('#', '');
-    if (hash && SECTIONS.find(s => s.id === hash)) setActive(hash);
-  }, []);
+    const section = location.state?.section;
+    if (section && SECTIONS.find(s => s.id === section)) {
+      setActive(section);
+    }
+  }, [location.state]);
 
   function navTo(id) {
     setActive(id);
     setSidebarOpen(false);
-    window.location.hash = id;
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 

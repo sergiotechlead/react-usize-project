@@ -52,15 +52,21 @@
   flex: 1;
   justify-content: center;
 }
-.navbar-links a {
+.navbar-links a,
+.nav-scroll-btn {
   font-size: 14px;
   color: var(--color-text-muted);
   text-decoration: none;
   padding: 6px 12px;
   border-radius: var(--radius-md);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
   transition: color 0.15s, background 0.15s;
 }
-.navbar-links a:hover { color: var(--color-text); background: rgba(83,160,248,.06); }
+.navbar-links a:hover,
+.nav-scroll-btn:hover { color: var(--color-text); background: rgba(83,160,248,.06); }
 .navbar-links a.is-active { color: var(--color-accent); }
 
 .navbar-actions {

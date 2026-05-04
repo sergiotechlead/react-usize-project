@@ -197,7 +197,7 @@ export default function PricingPage() {
                   ))}
                 </ul>
                 <Link
-                  to={p.id === 'enterprise' ? '/docs#contact' : '/register'}
+                  to={p.id === 'enterprise' ? '/contact' : '/register'}
                   className={`plan-cta-btn${p.highlight ? ' primary' : ''}`}
                 >
                   {p.cta}

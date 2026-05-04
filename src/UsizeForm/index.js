@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faSpinner, faRulerCombined } from '@fortawesome/free-solid-svg-icons';
 import { useModel } from '../context/ModelContext';
 import { predictSize, SIZE_POSITIONS } from '../ml/modelConfig';
 import svg from './up-arrow.min.svg';
@@ -37,7 +39,7 @@ function SizeResult({ size, onBack }) {
       </div>
       <SizeMeter size={size} />
       <button className="btn-secondary" onClick={onBack}>
-        ← Volver a intentar
+        <FontAwesomeIcon icon={faArrowLeft} /> Volver a intentar
       </button>
     </div>
   );
@@ -73,12 +75,12 @@ function UsizeForm() {
     return <SizeResult size={predictedSize} onBack={() => setStep('form')} />;
   }
 
-  const isModelReady  = modelStatus === 'ready';
-  const isLoading     = step === 'loading' || !isModelReady;
-  const submitLabel   = step === 'loading'        ? 'Prediciendo...'
-                      : modelStatus === 'checking' ? 'Verificando modelo...'
-                      : modelStatus === 'initializing' ? 'Inicializando IA...'
-                      : 'Predecir mi talla →';
+  const isModelReady = modelStatus === 'ready';
+  const isLoading    = step === 'loading' || !isModelReady;
+  const submitLabel  = step === 'loading'          ? 'Prediciendo...'
+                     : modelStatus === 'checking'  ? 'Verificando modelo...'
+                     : modelStatus === 'initializing' ? 'Inicializando IA...'
+                     : null;
 
   return (
     <div className="usize-form">
@@ -90,7 +92,7 @@ function UsizeForm() {
 
       {modelStatus === 'initializing' && (
         <div className="form-info" role="status">
-          <span className="loading-spinner" />
+          <FontAwesomeIcon icon={faSpinner} spin />
           Entrenando modelo base, esto toma unos segundos…
         </div>
       )}
@@ -134,8 +136,10 @@ function UsizeForm() {
 
         <button type="submit" className="btn-primary" disabled={isLoading}>
           {isLoading ? (
-            <><span className="loading-spinner" />{submitLabel}</>
-          ) : submitLabel}
+            <><FontAwesomeIcon icon={faSpinner} spin /> {submitLabel}</>
+          ) : (
+            <><FontAwesomeIcon icon={faRulerCombined} /> Predecir mi talla</>
+          )}
         </button>
       </form>
     </div>

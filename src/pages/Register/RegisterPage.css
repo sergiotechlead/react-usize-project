@@ -1,65 +1,59 @@
-.login-page {
+.register-page {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 32px 20px;
+  padding: 48px 20px;
   background: radial-gradient(ellipse at 60% 20%, rgba(83,160,248,.07) 0%, transparent 60%),
               var(--color-bg);
 }
 
-.login-back {
+.reg-back {
   position: fixed;
   top: 20px; left: 24px;
   font-size: 13px;
   color: var(--color-text-muted);
   text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   transition: color .15s;
 }
-.login-back:hover { color: var(--color-text); }
+.reg-back:hover { color: var(--color-text); }
 
-.login-card {
+.reg-card {
   width: 100%;
-  max-width: 420px;
+  max-width: 560px;
   background: var(--color-bg-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-xl);
-  padding: 36px;
+  padding: 40px;
   box-shadow: var(--shadow-card);
   animation: fadeIn 0.3s ease both;
 }
 
-.login-brand {
+.reg-brand {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
-.brand-logo {
-  width: 36px; height: 36px; border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--color-accent), #2a7ae4);
-  display: flex; align-items: center; justify-content: center;
-}
-.brand-logo-letter { font-size: 18px; font-weight: 800; color: #fff; line-height: 1; }
-.login-brand-name { font-size: 18px; font-weight: 700; color: var(--color-text); }
+.reg-brand-name { font-size: 18px; font-weight: 700; color: var(--color-text); }
 
-.login-title {
+.reg-title {
   font-size: 22px;
   font-weight: 700;
   color: var(--color-text);
   margin-bottom: 6px;
-  letter-spacing: -0.3px;
 }
-
-.login-subtitle {
+.reg-subtitle {
   font-size: 14px;
   color: var(--color-text-muted);
   margin-bottom: 28px;
-  line-height: 1.5;
 }
 
-.login-error {
+.reg-error {
   background: var(--color-error-bg);
   border: 1px solid rgba(239,123,123,.25);
   border-radius: var(--radius-md);
@@ -69,19 +63,21 @@
   margin-bottom: 20px;
 }
 
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.reg-form { display: flex; flex-direction: column; gap: 16px; }
+
+.reg-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
 
-.login-field {
+.reg-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-.login-field label {
-  font-size: 13px;
+.reg-field label {
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--color-text-muted);
 }
@@ -105,7 +101,7 @@
   border-radius: var(--radius-md);
   padding: 11px 14px 11px 38px;
   color: var(--color-text);
-  font-size: 15px;
+  font-size: 14px;
   outline: none;
   transition: border-color .2s, box-shadow .2s;
 }
@@ -115,8 +111,56 @@
 }
 .field-icon-wrap input::placeholder { color: var(--color-text-subtle); }
 
-.login-submit {
-  margin-top: 8px;
+/* Plan selector */
+.plan-selector { display: flex; gap: 10px; }
+
+.plan-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-border-dim);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+  position: relative;
+}
+.plan-option input[type="radio"] { display: none; }
+.plan-option.selected {
+  border-color: var(--color-accent);
+  background: rgba(83,160,248,.06);
+}
+.plan-option-body { flex: 1; }
+.plan-option-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+.plan-option-name { font-size: 14px; font-weight: 600; color: var(--color-text); }
+.plan-option-price { font-size: 13px; font-weight: 600; color: var(--color-accent); }
+.plan-option-desc { font-size: 12px; color: var(--color-text-muted); }
+.plan-option-check {
+  color: var(--color-accent);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.terms-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+.terms-label input[type="checkbox"] { accent-color: var(--color-accent); }
+.terms-label a { color: var(--color-accent); text-decoration: none; }
+.terms-label a:hover { text-decoration: underline; }
+
+.reg-submit {
+  margin-top: 4px;
   width: 100%;
   padding: 13px;
   background: var(--color-accent);
@@ -132,51 +176,26 @@
   gap: 8px;
   transition: background .2s, box-shadow .2s, transform .15s;
 }
-.login-submit:hover:not(:disabled) {
+.reg-submit:hover:not(:disabled) {
   background: var(--color-accent-hover);
   box-shadow: 0 4px 16px rgba(83,160,248,.35);
   transform: translateY(-1px);
 }
-.login-submit:disabled { opacity: .65; cursor: not-allowed; }
+.reg-submit:disabled { opacity: .65; cursor: not-allowed; }
 
-.loading-spinner {
-  display: inline-block;
-  width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-}
-
-.login-switch {
+.reg-switch {
   margin-top: 20px;
   text-align: center;
   font-size: 13.5px;
   color: var(--color-text-muted);
 }
-.login-switch a { color: var(--color-accent); text-decoration: none; }
-.login-switch a:hover { text-decoration: underline; }
-
-.login-hint {
-  margin-top: 24px;
-  padding: 14px;
-  background: var(--color-accent-dim);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-}
-.login-hint p { font-size: 12.5px; color: var(--color-text-muted); line-height: 1.6; }
-.login-hint code {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  background: rgba(83,160,248,.15);
-  padding: 1px 6px;
-  border-radius: 4px;
-  color: var(--color-accent);
-}
+.reg-switch a { color: var(--color-accent); text-decoration: none; }
+.reg-switch a:hover { text-decoration: underline; }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes spin   { to   { transform: rotate(360deg); } }
 
-@media (max-width: 480px) {
-  .login-card { padding: 28px 20px; }
+@media (max-width: 520px) {
+  .reg-card { padding: 28px 20px; }
+  .reg-row  { grid-template-columns: 1fr; }
+  .plan-selector { flex-direction: column; }
 }

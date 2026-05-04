@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight, faSpinner, faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '../../context/AuthContext';
 import './LoginPage.css';
 
@@ -18,7 +20,7 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      await new Promise(r => setTimeout(r, 600)); // simulated network delay
+      await new Promise(r => setTimeout(r, 600));
       login(email, password);
       navigate('/dashboard', { replace: true });
     } catch (err) {
@@ -30,7 +32,9 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      <Link to="/" className="login-back">← Volver al inicio</Link>
+      <Link to="/" className="login-back">
+        <FontAwesomeIcon icon={faArrowLeft} /> Volver al inicio
+      </Link>
 
       <div className="login-card">
         <div className="login-brand">
@@ -48,32 +52,46 @@ export default function LoginPage() {
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="login-field">
             <label htmlFor="email">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              placeholder="marca@empresa.com"
-              required
-              autoFocus
-            />
+            <div className="field-icon-wrap">
+              <FontAwesomeIcon icon={faEnvelope} className="field-icon" />
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="marca@empresa.com"
+                required
+                autoFocus
+              />
+            </div>
           </div>
           <div className="login-field">
             <label htmlFor="password">Contraseña</label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              minLength={3}
-              required
-            />
+            <div className="field-icon-wrap">
+              <FontAwesomeIcon icon={faLock} className="field-icon" />
+              <input
+                id="password"
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                minLength={3}
+                required
+              />
+            </div>
           </div>
           <button type="submit" className="login-submit" disabled={loading}>
-            {loading ? <><span className="loading-spinner" />Entrando...</> : 'Iniciar sesión →'}
+            {loading ? (
+              <><FontAwesomeIcon icon={faSpinner} spin /> Entrando...</>
+            ) : (
+              <>Iniciar sesión <FontAwesomeIcon icon={faArrowRight} /></>
+            )}
           </button>
         </form>
+
+        <p className="login-switch">
+          ¿No tienes cuenta? <Link to="/register">Crear cuenta gratis</Link>
+        </p>
 
         <div className="login-hint">
           <p>

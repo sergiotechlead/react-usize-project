@@ -1,49 +1,97 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faPlay, faSpinner, faXmark, faRulerCombined,
+  faFileArrowUp, faBrain, faCode, faCrosshairs,
+  faShieldHalved, faMobile, faChartLine, faPalette,
+  faLink, faCheck,
+} from '@fortawesome/free-solid-svg-icons';
 import { useModel } from '../../context/ModelContext';
+import Navbar from '../../components/Navbar';
+import Footer from '../../components/Footer';
 import UsizeForm from '../../UsizeForm';
 import './HomePage.css';
 
 const STEPS = [
-  { icon: '📊', title: 'Sube tus datos', desc: 'Descarga la plantilla Excel, rellénala con las medidas y tallas de tu marca, y cárgala en el dashboard.' },
-  { icon: '🧠', title: 'Entrena tu modelo', desc: 'Nuestra IA aprende los patrones de tu marca en segundos, directamente en el navegador. Sin servidores externos.' },
-  { icon: '⚡', title: 'Integra y listo', desc: 'Copia dos líneas de código en tu tienda. Tus clientes encontrarán su talla perfecta en tiempo real.' },
+  {
+    icon: faFileArrowUp,
+    title: 'Sube tus datos',
+    desc: 'Descarga la plantilla Excel, rellénala con las medidas y tallas de tu marca y cárgala en el dashboard.',
+  },
+  {
+    icon: faBrain,
+    title: 'Entrena tu modelo',
+    desc: 'Nuestra IA aprende los patrones de tu marca en segundos, directamente en el navegador. Sin servidores externos.',
+  },
+  {
+    icon: faCode,
+    title: 'Integra y listo',
+    desc: 'Copia dos líneas de código en tu tienda. Tus clientes encontrarán su talla perfecta en tiempo real.',
+  },
 ];
 
 const FEATURES = [
-  { icon: '🎯', title: 'Predicción precisa', desc: 'Red neuronal con 4 variables de entrada y más del 94 % de accuracy en datos de prueba.' },
-  { icon: '🔒', title: 'Datos privados', desc: 'El modelo se entrena en el navegador del usuario. Ningún dato personal sale de su dispositivo.' },
-  { icon: '📱', title: 'Responsive', desc: 'El widget se adapta a cualquier tienda: Shopify, WooCommerce, Vtex o HTML puro.' },
-  { icon: '📈', title: 'Analytics en tiempo real', desc: 'Monitorea cuántas predicciones se realizan, distribución de tallas y tendencias por período.' },
-  { icon: '🎨', title: 'Personalizable', desc: 'Ajusta colores, textos y estilos del widget para que coincida perfectamente con tu marca.' },
-  { icon: '🔗', title: 'Fácil integración', desc: 'Un script tag y un div. Sin frameworks requeridos. Funciona en cualquier stack.' },
+  { icon: faCrosshairs,  title: 'Predicción precisa',      desc: 'Red neuronal con 4 variables de entrada y más del 94 % de accuracy en datos de prueba.' },
+  { icon: faShieldHalved, title: 'Datos privados',         desc: 'El modelo se entrena en el navegador del usuario. Ningún dato personal sale de su dispositivo.' },
+  { icon: faMobile,      title: 'Responsive',              desc: 'El widget se adapta a cualquier tienda: Shopify, WooCommerce, Vtex o HTML puro.' },
+  { icon: faChartLine,   title: 'Analytics en tiempo real',desc: 'Monitorea cuántas predicciones se realizan, distribución de tallas y tendencias por período.' },
+  { icon: faPalette,     title: 'Personalizable',          desc: 'Ajusta colores, textos y estilos del widget para que coincida perfectamente con tu marca.' },
+  { icon: faLink,        title: 'Fácil integración',       desc: 'Un script tag y un div. Sin frameworks requeridos. Funciona en cualquier stack.' },
 ];
 
 const PLANS = [
-  { name: 'Starter', price: 'Gratis', limit: '500 predicciones/mes', features: ['1 modelo', 'Widget estándar', 'Soporte por email'], cta: 'Empezar gratis', highlight: false },
-  { name: 'Pro',     price: '$29',    limit: '10 000 predicciones/mes', period: '/mes', features: ['3 modelos', 'Widget personalizado', 'Analytics avanzado', 'Soporte prioritario'], cta: 'Probar Pro', highlight: true },
-  { name: 'Enterprise', price: 'Custom', limit: 'Predicciones ilimitadas', features: ['Modelos ilimitados', 'Branding propio', 'SLA 99.9 %', 'Manager dedicado'], cta: 'Contactar ventas', highlight: false },
+  {
+    name: 'Starter',
+    price: 'Gratis',
+    limit: '500 predicciones/mes',
+    features: ['1 modelo', 'Widget estándar', 'Soporte por email'],
+    cta: 'Empezar gratis',
+    highlight: false,
+  },
+  {
+    name: 'Pro',
+    price: '$29',
+    period: '/mes',
+    limit: '10 000 predicciones/mes',
+    features: ['3 modelos', 'Widget personalizado', 'Analytics avanzado', 'Soporte prioritario'],
+    cta: 'Probar Pro',
+    highlight: true,
+  },
+  {
+    name: 'Enterprise',
+    price: 'Custom',
+    limit: 'Predicciones ilimitadas',
+    features: ['Modelos ilimitados', 'Branding propio', 'SLA 99.9 %', 'Manager dedicado'],
+    cta: 'Contactar ventas',
+    highlight: false,
+  },
 ];
 
 function DemoModal({ onClose }) {
   const overlayRef = useRef(null);
 
   useEffect(() => {
-    const onKey = (e) => { if (e.key === 'Escape') onClose(); };
-    document.addEventListener('keydown', onKey);
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
     document.body.style.overflow = 'hidden';
-    return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = ''; };
+    return () => { document.removeEventListener('keydown', handler); document.body.style.overflow = ''; };
   }, [onClose]);
 
   return (
-    <div className="modal-backdrop" ref={overlayRef}
+    <div
+      className="modal-backdrop"
+      ref={overlayRef}
       onClick={e => e.target === overlayRef.current && onClose()}
-      role="dialog" aria-modal="true">
+      role="dialog"
+      aria-modal="true"
+    >
       <div className="modal-card">
         <div className="modal-header">
           <h2 className="modal-title">Predictor de Talla</h2>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Cerrar">✕</button>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Cerrar">
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
         </div>
         <UsizeForm />
       </div>
@@ -52,39 +100,14 @@ function DemoModal({ onClose }) {
 }
 
 export default function HomePage() {
-  const { user } = useAuth();
   const { modelStatus } = useModel();
-  const navigate = useNavigate();
   const [demoOpen, setDemoOpen] = useState(false);
 
   const modelReady = modelStatus === 'ready';
 
   return (
     <div className="home">
-      {/* ── Navbar ── */}
-      <nav className="home-nav">
-        <div className="nav-brand">
-          <div className="brand-logo"><span className="brand-logo-letter">U</span></div>
-          <span className="nav-brand-name">USize</span>
-        </div>
-        <ul className="nav-links">
-          <li><a href="#como-funciona">Cómo funciona</a></li>
-          <li><a href="#funcionalidades">Funcionalidades</a></li>
-          <li><a href="#precios">Precios</a></li>
-        </ul>
-        <div className="nav-actions">
-          {user ? (
-            <button className="btn-nav-primary" onClick={() => navigate('/dashboard')}>
-              Ir al Dashboard →
-            </button>
-          ) : (
-            <>
-              <Link to="/login" className="btn-nav-ghost">Iniciar sesión</Link>
-              <Link to="/login" className="btn-nav-primary">Empezar gratis →</Link>
-            </>
-          )}
-        </div>
-      </nav>
+      <Navbar />
 
       {/* ── Hero ── */}
       <section className="hero">
@@ -104,16 +127,21 @@ export default function HomePage() {
               onClick={() => setDemoOpen(true)}
               disabled={!modelReady}
             >
-              {modelReady ? '🎯 Ver demo en vivo' : <><span className="loading-spinner sm" /> Inicializando IA...</>}
+              {modelReady ? (
+                <><FontAwesomeIcon icon={faPlay} /> Ver demo en vivo</>
+              ) : (
+                <><FontAwesomeIcon icon={faSpinner} spin /> Inicializando IA...</>
+              )}
             </button>
-            <Link to="/login" className="btn-hero-secondary">Crear cuenta gratis</Link>
+            <Link to="/register" className="btn-hero-secondary">Crear cuenta gratis</Link>
           </div>
           <p className="hero-hint">
             {modelReady
-              ? '✓ Modelo pre-entrenado cargado — sin registro necesario'
+              ? 'Modelo pre-entrenado cargado — sin registro necesario'
               : 'Entrenando modelo base en segundo plano…'}
           </p>
         </div>
+
         <div className="hero-visual">
           <div className="widget-mockup">
             <div className="mockup-bar">
@@ -129,7 +157,8 @@ export default function HomePage() {
                     className={`mockup-cta-btn${modelReady ? '' : ' disabled'}`}
                     onClick={() => modelReady && setDemoOpen(true)}
                   >
-                    📏 ¿Cuál es mi talla?
+                    <FontAwesomeIcon icon={faRulerCombined} />
+                    &nbsp;¿Cuál es mi talla?
                   </button>
                 </div>
               </div>
@@ -147,7 +176,9 @@ export default function HomePage() {
             {STEPS.map((s, i) => (
               <div key={i} className="step-card">
                 <div className="step-number">{i + 1}</div>
-                <div className="step-icon">{s.icon}</div>
+                <div className="step-icon-wrap">
+                  <FontAwesomeIcon icon={s.icon} />
+                </div>
                 <h3 className="step-title">{s.title}</h3>
                 <p className="step-desc">{s.desc}</p>
               </div>
@@ -164,7 +195,9 @@ export default function HomePage() {
           <div className="features-grid">
             {FEATURES.map((f, i) => (
               <div key={i} className="feature-card">
-                <span className="feature-icon">{f.icon}</span>
+                <div className="feature-icon-wrap">
+                  <FontAwesomeIcon icon={f.icon} />
+                </div>
                 <h3 className="feature-title">{f.title}</h3>
                 <p className="feature-desc">{f.desc}</p>
               </div>
@@ -173,7 +206,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Snippet preview ── */}
+      {/* ── Embed snippet ── */}
       <section className="section embed-section">
         <div className="section-inner embed-inner">
           <div className="embed-copy">
@@ -183,7 +216,7 @@ export default function HomePage() {
               Pega este snippet en tu tienda. Funciona con cualquier plataforma
               de e-commerce o HTML estático.
             </p>
-            <Link to="/login" className="btn-nav-primary">Obtener mi API key →</Link>
+            <Link to="/register" className="btn-nav-primary">Obtener mi API key</Link>
           </div>
           <div className="embed-code-block">
             <div className="code-bar">
@@ -222,30 +255,29 @@ export default function HomePage() {
                 </div>
                 <p className="plan-limit">{p.limit}</p>
                 <ul className="plan-features">
-                  {p.features.map(f => <li key={f}>✓ {f}</li>)}
+                  {p.features.map(f => (
+                    <li key={f}>
+                      <FontAwesomeIcon icon={faCheck} className="plan-check" />
+                      {f}
+                    </li>
+                  ))}
                 </ul>
-                <Link to="/login" className={`plan-cta${p.highlight ? ' plan-cta--primary' : ''}`}>
+                <Link
+                  to="/register"
+                  className={`plan-cta${p.highlight ? ' plan-cta--primary' : ''}`}
+                >
                   {p.cta}
                 </Link>
               </div>
             ))}
           </div>
+          <div className="pricing-more">
+            <Link to="/pricing" className="btn-nav-ghost">Ver comparación completa de planes</Link>
+          </div>
         </div>
       </section>
 
-      {/* ── Footer ── */}
-      <footer className="home-footer">
-        <div className="footer-brand">
-          <div className="brand-logo sm"><span className="brand-logo-letter">U</span></div>
-          <span>USize</span>
-        </div>
-        <p className="footer-copy">© 2024 USize · Construido con React &amp; TensorFlow.js</p>
-        <div className="footer-links">
-          <a href="#como-funciona">Documentación</a>
-          <a href="#precios">Precios</a>
-          <Link to="/login">Acceso</Link>
-        </div>
-      </footer>
+      <Footer />
 
       {demoOpen && <DemoModal onClose={() => setDemoOpen(false)} />}
     </div>

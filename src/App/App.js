@@ -1,8 +1,12 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import HomePage from '../pages/Home/HomePage';
-import LoginPage from '../pages/Login/LoginPage';
+import HomePage      from '../pages/Home/HomePage';
+import LoginPage     from '../pages/Login/LoginPage';
+import RegisterPage  from '../pages/Register/RegisterPage';
+import PricingPage   from '../pages/Pricing/PricingPage';
+import DocsPage      from '../pages/Docs/DocsPage';
 import DashboardPage from '../pages/Dashboard/DashboardPage';
+import NotFoundPage  from '../pages/NotFound/NotFoundPage';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -15,8 +19,11 @@ function App() {
       <Routes>
         <Route path="/"          element={<HomePage />} />
         <Route path="/login"     element={<LoginPage />} />
+        <Route path="/register"  element={<RegisterPage />} />
+        <Route path="/pricing"   element={<PricingPage />} />
+        <Route path="/docs"      element={<DocsPage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path="*"          element={<Navigate to="/" replace />} />
+        <Route path="*"          element={<NotFoundPage />} />
       </Routes>
     </HashRouter>
   );

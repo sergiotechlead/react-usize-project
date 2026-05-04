@@ -91,8 +91,6 @@ npm run build
 # Deploy the build/ folder to GitHub Pages
 ```
 
-Live demo: [sergiotechlead.github.io/react-usize-project/build](https://sergiotechlead.github.io/react-usize-project/build/)
-
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.

@@ -1,0 +1,85 @@
+.site-footer {
+  border-top: 1px solid var(--color-border-dim);
+  background: var(--color-bg-elevated);
+  padding: 60px 40px 0;
+}
+
+.footer-inner {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 48px;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding-bottom: 48px;
+}
+
+.footer-brand-col { display: flex; flex-direction: column; gap: 14px; }
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.footer-brand-name { font-size: 16px; font-weight: 700; color: var(--color-text); }
+
+.footer-tagline {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  max-width: 240px;
+}
+
+.footer-social {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: 16px;
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
+}
+.footer-social:hover { color: var(--color-text); border-color: var(--color-border); }
+
+.footer-links-group h4 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+  margin-bottom: 16px;
+}
+.footer-links-group ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.footer-links-group a {
+  font-size: 13.5px;
+  color: var(--color-text-muted);
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.footer-links-group a:hover { color: var(--color-text); }
+
+.footer-bottom {
+  border-top: 1px solid var(--color-border-dim);
+  padding: 20px 0;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.footer-bottom p { font-size: 13px; color: var(--color-text-subtle); }
+
+@media (max-width: 900px) {
+  .footer-inner { grid-template-columns: 1fr 1fr; }
+  .footer-brand-col { grid-column: 1 / -1; }
+}
+@media (max-width: 520px) {
+  .site-footer { padding: 40px 20px 0; }
+  .footer-inner { grid-template-columns: 1fr; gap: 32px; }
+  .footer-brand-col { grid-column: auto; }
+}

@@ -75,7 +75,8 @@
   color: var(--color-accent);
   font-weight: 600;
 }
-.sidebar-icon { font-size: 16px; }
+.sidebar-icon { font-size: 14px; width: 16px; text-align: center; flex-shrink: 0; }
+.sidebar-active-arrow { font-size: 10px; margin-left: auto; color: var(--color-accent); opacity: .6; }
 
 .sidebar-bottom { padding: 0 16px; }
 
@@ -162,7 +163,12 @@
 }
 .stat-label { font-size: 12px; color: var(--color-text-muted); margin-bottom: 6px; }
 .stat-value { font-size: 26px; font-weight: 700; color: var(--color-text); margin-bottom: 4px; }
-.stat-delta { font-size: 12px; }
+.stat-delta {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
 .stat-delta.up   { color: #5db35d; }
 .stat-delta.down { color: #ef7b7b; }
 
@@ -233,6 +239,7 @@
   opacity: .7;
   margin-top: 8px;
 }
+.title-icon { margin-right: 8px; color: var(--color-accent); font-size: 13px; }
 
 /* ── Model section ─────────────────────────────────────────────────────────── */
 .model-status-badge {
@@ -367,15 +374,7 @@
 .log-entry--success { color: #5db35d; }
 .log-entry--error   { color: #ef7b7b; }
 
-.loading-spinner {
-  display: inline-block;
-  width: 13px; height: 13px;
-  border: 2px solid rgba(255,255,255,.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+/* Spinner handled by FontAwesomeIcon spin prop */
 
 /* ── Integration section ───────────────────────────────────────────────────── */
 .api-key-box {

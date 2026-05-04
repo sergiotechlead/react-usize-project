@@ -1,12 +1,19 @@
 import { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faGauge, faBrain, faCode, faPalette,
+  faCircleCheck, faCircleXmark, faSpinner,
+  faDownload, faUpload, faPlay,
+  faCopy, faRightFromBracket, faKey,
+  faArrowTrendUp, faArrowTrendDown, faChevronRight,
+} from '@fortawesome/free-solid-svg-icons';
 import * as XLSX from 'xlsx';
 import { useAuth } from '../../context/AuthContext';
 import { useModel } from '../../context/ModelContext';
 import { DEFAULT_INPUT_DATA, DEFAULT_LABELS, trainModel, parseExcelRows } from '../../ml/modelConfig';
 import './DashboardPage.css';
 
-// ── Mock analytics data ──────────────────────────────────────────────────────
 const MOCK_STATS = [
   { label: 'Predicciones este mes', value: '1 247', delta: '+12 %', up: true  },
   { label: 'Accuracy del modelo',   value: '94.3 %', delta: '+1.2 %', up: true  },
@@ -22,13 +29,12 @@ const SIZE_DIST = [
 ];
 
 const NAV_ITEMS = [
-  { id: 'overview',      icon: '📊', label: 'Resumen' },
-  { id: 'model',         icon: '🧠', label: 'Modelo IA' },
-  { id: 'integration',   icon: '🔗', label: 'Integración' },
-  { id: 'customization', icon: '🎨', label: 'Personalización' },
+  { id: 'overview',      icon: faGauge,   label: 'Resumen' },
+  { id: 'model',         icon: faBrain,   label: 'Modelo IA' },
+  { id: 'integration',   icon: faCode,    label: 'Integración' },
+  { id: 'customization', icon: faPalette, label: 'Personalización' },
 ];
 
-// ── Template download ────────────────────────────────────────────────────────
 function downloadTemplate() {
   const rows = DEFAULT_INPUT_DATA.slice(0, 8).map((r, i) => ({
     espalda_cm: r[0], altura_cm: r[1], peso_kg: r[2], 'edad_años': r[3],
@@ -41,7 +47,6 @@ function downloadTemplate() {
   XLSX.writeFile(wb, 'plantilla-usize.xlsx');
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────────
 function StatCards() {
   return (
     <div className="stats-grid">
@@ -49,7 +54,10 @@ function StatCards() {
         <div key={s.label} className="stat-card">
           <p className="stat-label">{s.label}</p>
           <p className="stat-value">{s.value}</p>
-          <span className={`stat-delta ${s.up ? 'up' : 'down'}`}>{s.delta} vs mes anterior</span>
+          <span className={`stat-delta ${s.up ? 'up' : 'down'}`}>
+            <FontAwesomeIcon icon={s.up ? faArrowTrendUp : faArrowTrendDown} />
+            {s.delta} vs mes anterior
+          </span>
         </div>
       ))}
     </div>
@@ -84,7 +92,7 @@ function ModelSection({ user }) {
   const [trainLogs, setTrainLogs]         = useState([]);
   const [isTrained, setIsTrained]         = useState(false);
   const [includeBase, setIncludeBase]     = useState(true);
-  const fileRef = useRef(null);
+  const fileRef  = useRef(null);
   const logEndRef = useRef(null);
 
   function addLog(type, text) {
@@ -126,7 +134,7 @@ function ModelSection({ user }) {
         inputData, labels, epochs: EPOCHS,
         onEpoch: (epoch, { loss }) => {
           setTrainProgress(Math.round(((epoch + 1) / EPOCHS) * 100));
-          if (epoch === 0)         addLog('start', 'Entrenando red neuronal…');
+          if (epoch === 0) addLog('start', 'Entrenando red neuronal…');
           if (epoch % 50 === 0 && epoch > 0)
             addLog('epoch', `Epoch ${epoch}/${EPOCHS - 1}  —  loss: ${loss.toFixed(6)}`);
         },
@@ -135,29 +143,37 @@ function ModelSection({ user }) {
       const accKey = Object.keys(result.history).find(k => k.toLowerCase().includes('acc')) ?? 'acc';
       const h = result.history[accKey] ?? [];
       const acc = h.length ? Math.round(h[h.length - 1] * 10000) / 100 : 100;
-      addLog('success', `✓ Entrenamiento completo — Accuracy: ${acc}%`);
-      addLog('success', '✓ Modelo guardado en localStorage');
+      addLog('success', `Entrenamiento completo — Accuracy: ${acc}%`);
+      addLog('success', 'Modelo guardado en localStorage');
       setIsTrained(true);
       markReady();
     } catch (err) {
-      addLog('error', `✗ ${err.message}`);
+      addLog('error', `Error: ${err.message}`);
     } finally {
       setIsTraining(false);
       setTrainProgress(100);
     }
   }
 
+  function statusIcon() {
+    if (modelStatus === 'ready')        return <FontAwesomeIcon icon={faCircleCheck} />;
+    if (modelStatus === 'error')        return <FontAwesomeIcon icon={faCircleXmark} />;
+    return <FontAwesomeIcon icon={faSpinner} spin />;
+  }
+  function statusLabel() {
+    if (modelStatus === 'ready')        return 'Modelo activo';
+    if (modelStatus === 'initializing') return 'Inicializando…';
+    if (modelStatus === 'checking')     return 'Verificando…';
+    return 'Error';
+  }
+
   return (
     <div className="section-content">
       <div className="cards-row">
-        {/* Model status */}
         <div className="dash-card">
           <h3 className="card-title">Estado del modelo</h3>
           <div className={`model-status-badge ${modelStatus}`}>
-            {modelStatus === 'ready'        && '✓ Modelo activo'}
-            {modelStatus === 'initializing' && '⏳ Inicializando…'}
-            {modelStatus === 'checking'     && '⏳ Verificando…'}
-            {modelStatus === 'error'        && '✗ Error'}
+            {statusIcon()} {statusLabel()}
           </div>
           <dl className="model-meta">
             <div><dt>Plan</dt><dd>{user.plan}</dd></div>
@@ -167,7 +183,6 @@ function ModelSection({ user }) {
           </dl>
         </div>
 
-        {/* Upload & retrain */}
         <div className="dash-card flex-grow">
           <h3 className="card-title">Reentrenar con tus datos</h3>
           <p className="card-desc">
@@ -177,10 +192,10 @@ function ModelSection({ user }) {
 
           <div className="upload-actions">
             <button className="btn-outline" onClick={downloadTemplate}>
-              ⬇ Descargar plantilla Excel
+              <FontAwesomeIcon icon={faDownload} /> Descargar plantilla Excel
             </button>
             <button className="btn-outline" onClick={() => fileRef.current?.click()}>
-              ⬆ Cargar Excel con datos
+              <FontAwesomeIcon icon={faUpload} /> Cargar Excel con datos
             </button>
             <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv"
               style={{ display: 'none' }} onChange={handleFileUpload} />
@@ -188,7 +203,7 @@ function ModelSection({ user }) {
 
           {uploadedData && (
             <div className="upload-summary success">
-              ✓ {uploadedData.inputData.length} filas cargadas correctamente
+              <FontAwesomeIcon icon={faCircleCheck} /> {uploadedData.inputData.length} filas cargadas correctamente
             </div>
           )}
           {parseErrors.length > 0 && (
@@ -208,7 +223,10 @@ function ModelSection({ user }) {
 
           {uploadedData && (
             <button className="btn-primary-dash" onClick={handleTrain} disabled={isTraining}>
-              {isTraining ? <><span className="loading-spinner" />Entrenando…</> : '▶ Iniciar entrenamiento'}
+              {isTraining
+                ? <><FontAwesomeIcon icon={faSpinner} spin /> Entrenando…</>
+                : <><FontAwesomeIcon icon={faPlay} /> Iniciar entrenamiento</>
+              }
             </button>
           )}
 
@@ -235,6 +253,8 @@ function ModelSection({ user }) {
 
 function IntegrationSection({ user }) {
   const [copied, setCopied] = useState(false);
+  const [copiedKey, setCopiedKey] = useState(false);
+
   const snippet = `<!-- 1. Agrega en tu <head> -->
 <link rel="stylesheet"
   href="https://cdn.usize.app/widget.css">
@@ -256,17 +276,24 @@ function IntegrationSection({ user }) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
+  function copyKey() {
+    navigator.clipboard.writeText(user.apiKey);
+    setCopiedKey(true);
+    setTimeout(() => setCopiedKey(false), 2000);
+  }
 
   return (
     <div className="section-content">
       <div className="cards-row">
         <div className="dash-card">
-          <h3 className="card-title">Tu API key</h3>
+          <h3 className="card-title">
+            <FontAwesomeIcon icon={faKey} className="title-icon" /> Tu API key
+          </h3>
           <p className="card-desc">Úsala para autenticar el widget en tu tienda.</p>
           <div className="api-key-box">
             <code>{user.apiKey}</code>
-            <button className="btn-copy-inline" onClick={() => { navigator.clipboard.writeText(user.apiKey); }}>
-              Copiar
+            <button className="btn-copy-inline" onClick={copyKey}>
+              <FontAwesomeIcon icon={faCopy} /> {copiedKey ? 'Copiado' : 'Copiar'}
             </button>
           </div>
           <p className="card-hint">Mantén esta clave privada. No la expongas en código público.</p>
@@ -276,7 +303,7 @@ function IntegrationSection({ user }) {
           <div className="code-card-header">
             <h3 className="card-title">Snippet de integración</h3>
             <button className="btn-copy" onClick={copySnippet}>
-              {copied ? '✓ Copiado' : 'Copiar código'}
+              <FontAwesomeIcon icon={faCopy} /> {copied ? 'Copiado' : 'Copiar código'}
             </button>
           </div>
           <pre className="code-pre"><code>{snippet}</code></pre>
@@ -295,7 +322,7 @@ function IntegrationSection({ user }) {
   );
 }
 
-function CustomizationSection({ user }) {
+function CustomizationSection() {
   const [color, setColor]       = useState('#53a0f8');
   const [btnText, setBtnText]   = useState('¿Cuál es mi talla?');
   const [position, setPosition] = useState('after-add-to-cart');
@@ -342,11 +369,8 @@ function CustomizationSection({ user }) {
             <div className="preview-info">
               <div className="preview-line w60" />
               <div className="preview-line w40" />
-              <button
-                className="preview-cta"
-                style={{ background: color, borderColor: color }}
-              >
-                📏 {btnText}
+              <button className="preview-cta" style={{ background: color, borderColor: color }}>
+                {btnText}
               </button>
             </div>
           </div>
@@ -359,7 +383,6 @@ function CustomizationSection({ user }) {
   );
 }
 
-// ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const navigate         = useNavigate();
@@ -372,11 +395,12 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard">
-      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-top">
           <Link to="/" className="sidebar-brand">
-            <div className="brand-logo"><span className="brand-logo-letter">U</span></div>
+            <div className="brand-logo">
+              <span className="brand-logo-letter">U</span>
+            </div>
             <span className="sidebar-brand-name">USize</span>
           </Link>
           <nav className="sidebar-nav">
@@ -386,8 +410,11 @@ export default function DashboardPage() {
                 className={`sidebar-item${activeTab === item.id ? ' active' : ''}`}
                 onClick={() => setActiveTab(item.id)}
               >
-                <span className="sidebar-icon">{item.icon}</span>
-                {item.label}
+                <FontAwesomeIcon icon={item.icon} className="sidebar-icon" />
+                <span>{item.label}</span>
+                {activeTab === item.id && (
+                  <FontAwesomeIcon icon={faChevronRight} className="sidebar-active-arrow" />
+                )}
               </button>
             ))}
           </nav>
@@ -400,17 +427,16 @@ export default function DashboardPage() {
               <p className="user-plan">{user.plan}</p>
             </div>
           </div>
-          <button className="sidebar-logout" onClick={handleLogout}>← Cerrar sesión</button>
+          <button className="sidebar-logout" onClick={handleLogout}>
+            <FontAwesomeIcon icon={faRightFromBracket} /> Cerrar sesión
+          </button>
         </div>
       </aside>
 
-      {/* Main */}
       <main className="dash-main">
         <div className="dash-topbar">
           <div>
-            <h1 className="dash-title">
-              {NAV_ITEMS.find(i => i.id === activeTab)?.label}
-            </h1>
+            <h1 className="dash-title">{NAV_ITEMS.find(i => i.id === activeTab)?.label}</h1>
             <p className="dash-subtitle">Bienvenido, <strong>{user.name}</strong></p>
           </div>
         </div>
@@ -424,7 +450,7 @@ export default function DashboardPage() {
           )}
           {activeTab === 'model'         && <ModelSection user={user} />}
           {activeTab === 'integration'   && <IntegrationSection user={user} />}
-          {activeTab === 'customization' && <CustomizationSection user={user} />}
+          {activeTab === 'customization' && <CustomizationSection />}
         </div>
       </main>
     </div>

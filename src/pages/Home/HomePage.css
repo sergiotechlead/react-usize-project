@@ -239,7 +239,18 @@
   line-height: 1;
   user-select: none;
 }
-.step-icon { font-size: 28px; margin-bottom: 12px; }
+.step-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  font-size: 18px;
+  margin-bottom: 14px;
+}
 .step-title { font-size: 16px; font-weight: 700; color: var(--color-text); margin-bottom: 8px; }
 .step-desc { font-size: 14px; color: var(--color-text-muted); line-height: 1.65; }
 
@@ -254,7 +265,18 @@
   transition: border-color 0.2s;
 }
 .feature-card:hover { border-color: var(--color-border); }
-.feature-icon { font-size: 24px; display: block; margin-bottom: 12px; }
+.feature-icon-wrap {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: var(--color-accent-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  font-size: 16px;
+  margin-bottom: 14px;
+}
 .feature-title { font-size: 15px; font-weight: 700; color: var(--color-text); margin-bottom: 6px; }
 .feature-desc { font-size: 13px; color: var(--color-text-muted); line-height: 1.6; }
 
@@ -323,6 +345,13 @@
 .plan-features { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
 .plan-features li { font-size: 14px; color: var(--color-text-muted); }
 .plan-features li::before { content: none; }
+.plan-check { color: var(--color-accent); font-size: 11px; flex-shrink: 0; }
+.plan-features li { display: flex; align-items: center; gap: 8px; }
+
+.pricing-more {
+  text-align: center;
+  margin-top: 32px;
+}
 
 .plan-cta {
   display: block;

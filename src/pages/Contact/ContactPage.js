@@ -4,18 +4,15 @@ import {
   faEnvelope, faBuilding, faUser, faPaperPlane,
   faSpinner, faCircleCheck, faClock, faHeadset,
 } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation } from 'react-i18next';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import './ContactPage.css';
 
-const VOLUME_OPTIONS = [
-  'Menos de 1 000 predicciones/mes',
-  '1 000 – 10 000 predicciones/mes',
-  '10 000 – 100 000 predicciones/mes',
-  'Más de 100 000 predicciones/mes',
-];
-
 export default function ContactPage() {
+  const { t } = useTranslation('contact');
+  const VOLUME_OPTIONS = t('form.volumeOptions', { returnObjects: true });
+
   const [form, setForm] = useState({
     name: '', company: '', email: '', role: '', volume: '', message: '',
   });
@@ -41,41 +38,30 @@ export default function ContactPage() {
       <div className="contact-layout">
         {/* Left — info */}
         <aside className="contact-info">
-          <div className="section-label">Contacto</div>
-          <h1 className="contact-title">Hablemos de tu proyecto</h1>
-          <p className="contact-lead">
-            ¿Tienes una tienda de moda de alto volumen o necesitas una integración
-            personalizada? Cuéntanos tu caso y te preparamos una propuesta a medida.
-          </p>
+          <div className="section-label">{t('label')}</div>
+          <h1 className="contact-title">{t('title')}</h1>
+          <p className="contact-lead">{t('lead')}</p>
 
           <div className="contact-cards">
             <div className="contact-card">
-              <div className="contact-card-icon">
-                <FontAwesomeIcon icon={faHeadset} />
-              </div>
+              <div className="contact-card-icon"><FontAwesomeIcon icon={faHeadset} /></div>
               <div>
-                <h3>Soporte Enterprise</h3>
-                <p>Manager de cuenta dedicado y SLA 99.9 % de disponibilidad.</p>
+                <h3>{t('cards.support.title')}</h3>
+                <p>{t('cards.support.desc')}</p>
               </div>
             </div>
             <div className="contact-card">
-              <div className="contact-card-icon">
-                <FontAwesomeIcon icon={faClock} />
-              </div>
+              <div className="contact-card-icon"><FontAwesomeIcon icon={faClock} /></div>
               <div>
-                <h3>Tiempo de respuesta</h3>
-                <p>Respondemos en menos de 24 horas en días hábiles.</p>
+                <h3>{t('cards.response.title')}</h3>
+                <p>{t('cards.response.desc')}</p>
               </div>
             </div>
             <div className="contact-card">
-              <div className="contact-card-icon">
-                <FontAwesomeIcon icon={faEnvelope} />
-              </div>
+              <div className="contact-card-icon"><FontAwesomeIcon icon={faEnvelope} /></div>
               <div>
-                <h3>Email directo</h3>
-                <p>
-                  <a href="mailto:enterprise@usize.app">enterprise@usize.app</a>
-                </p>
+                <h3>{t('cards.email.title')}</h3>
+                <p><a href="mailto:enterprise@usize.app">enterprise@usize.app</a></p>
               </div>
             </div>
           </div>
@@ -88,33 +74,30 @@ export default function ContactPage() {
               <div className="contact-success-icon">
                 <FontAwesomeIcon icon={faCircleCheck} />
               </div>
-              <h2>Mensaje enviado</h2>
-              <p>
-                Gracias por contactarnos. Revisaremos tu solicitud y te
-                responderemos en menos de 24 horas.
-              </p>
+              <h2>{t('success.title')}</h2>
+              <p>{t('success.desc')}</p>
             </div>
           ) : (
             <form className="contact-form" onSubmit={handleSubmit}>
               <div className="cf-row">
                 <div className="cf-field">
-                  <label htmlFor="cf-name">Nombre completo</label>
+                  <label htmlFor="cf-name">{t('form.name')}</label>
                   <div className="cf-input-wrap">
                     <FontAwesomeIcon icon={faUser} className="cf-icon" />
                     <input
                       id="cf-name" name="name" type="text"
-                      placeholder="Tu nombre"
+                      placeholder={t('form.namePlaceholder')}
                       value={form.name} onChange={handleChange} required
                     />
                   </div>
                 </div>
                 <div className="cf-field">
-                  <label htmlFor="cf-company">Empresa</label>
+                  <label htmlFor="cf-company">{t('form.company')}</label>
                   <div className="cf-input-wrap">
                     <FontAwesomeIcon icon={faBuilding} className="cf-icon" />
                     <input
                       id="cf-company" name="company" type="text"
-                      placeholder="Tu empresa"
+                      placeholder={t('form.companyPlaceholder')}
                       value={form.company} onChange={handleChange} required
                     />
                   </div>
@@ -123,23 +106,23 @@ export default function ContactPage() {
 
               <div className="cf-row">
                 <div className="cf-field">
-                  <label htmlFor="cf-email">Email de trabajo</label>
+                  <label htmlFor="cf-email">{t('form.email')}</label>
                   <div className="cf-input-wrap">
                     <FontAwesomeIcon icon={faEnvelope} className="cf-icon" />
                     <input
                       id="cf-email" name="email" type="email"
-                      placeholder="tu@empresa.com"
+                      placeholder={t('form.emailPlaceholder')}
                       value={form.email} onChange={handleChange} required
                     />
                   </div>
                 </div>
                 <div className="cf-field">
-                  <label htmlFor="cf-role">Cargo</label>
+                  <label htmlFor="cf-role">{t('form.role')}</label>
                   <div className="cf-input-wrap">
                     <FontAwesomeIcon icon={faUser} className="cf-icon" />
                     <input
                       id="cf-role" name="role" type="text"
-                      placeholder="CEO, CTO, Marketing…"
+                      placeholder={t('form.rolePlaceholder')}
                       value={form.role} onChange={handleChange}
                     />
                   </div>
@@ -147,13 +130,12 @@ export default function ContactPage() {
               </div>
 
               <div className="cf-field">
-                <label htmlFor="cf-volume">Volumen esperado de predicciones</label>
+                <label htmlFor="cf-volume">{t('form.volume')}</label>
                 <select
-                  id="cf-volume" name="volume"
-                  className="cf-select"
+                  id="cf-volume" name="volume" className="cf-select"
                   value={form.volume} onChange={handleChange} required
                 >
-                  <option value="">Selecciona un rango…</option>
+                  <option value="">{t('form.volumeDefault')}</option>
                   {VOLUME_OPTIONS.map(o => (
                     <option key={o} value={o}>{o}</option>
                   ))}
@@ -161,21 +143,19 @@ export default function ContactPage() {
               </div>
 
               <div className="cf-field">
-                <label htmlFor="cf-message">Cuéntanos tu caso</label>
+                <label htmlFor="cf-message">{t('form.message')}</label>
                 <textarea
-                  id="cf-message" name="message"
-                  className="cf-textarea"
-                  placeholder="Describe tu tienda, plataforma y qué necesitas de USize…"
-                  rows={5}
-                  value={form.message} onChange={handleChange} required
+                  id="cf-message" name="message" className="cf-textarea"
+                  placeholder={t('form.messagePlaceholder')}
+                  rows={5} value={form.message} onChange={handleChange} required
                 />
               </div>
 
               <button type="submit" className="cf-submit" disabled={loading}>
                 {loading ? (
-                  <><FontAwesomeIcon icon={faSpinner} spin /> Enviando…</>
+                  <><FontAwesomeIcon icon={faSpinner} spin /> {t('form.submitting')}</>
                 ) : (
-                  <><FontAwesomeIcon icon={faPaperPlane} /> Enviar mensaje</>
+                  <><FontAwesomeIcon icon={faPaperPlane} /> {t('form.submit')}</>
                 )}
               </button>
             </form>

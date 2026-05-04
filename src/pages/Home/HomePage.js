@@ -7,69 +7,19 @@ import {
   faShieldHalved, faMobile, faChartLine, faPalette,
   faLink, faCheck,
 } from '@fortawesome/free-solid-svg-icons';
+import { useTranslation, Trans } from 'react-i18next';
 import { useModel } from '../../context/ModelContext';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import UsizeForm from '../../UsizeForm';
 import './HomePage.css';
 
-const STEPS = [
-  {
-    icon: faFileArrowUp,
-    title: 'Sube tus datos',
-    desc: 'Descarga la plantilla Excel, rellénala con las medidas y tallas de tu marca y cárgala en el dashboard.',
-  },
-  {
-    icon: faBrain,
-    title: 'Entrena tu modelo',
-    desc: 'Nuestra IA aprende los patrones de tu marca en segundos, directamente en el navegador. Sin servidores externos.',
-  },
-  {
-    icon: faCode,
-    title: 'Integra y listo',
-    desc: 'Copia dos líneas de código en tu tienda. Tus clientes encontrarán su talla perfecta en tiempo real.',
-  },
-];
-
-const FEATURES = [
-  { icon: faCrosshairs,  title: 'Predicción precisa',      desc: 'Red neuronal con 4 variables de entrada y más del 94 % de accuracy en datos de prueba.' },
-  { icon: faShieldHalved, title: 'Datos privados',         desc: 'El modelo se entrena en el navegador del usuario. Ningún dato personal sale de su dispositivo.' },
-  { icon: faMobile,      title: 'Responsive',              desc: 'El widget se adapta a cualquier tienda: Shopify, WooCommerce, Vtex o HTML puro.' },
-  { icon: faChartLine,   title: 'Analytics en tiempo real',desc: 'Monitorea cuántas predicciones se realizan, distribución de tallas y tendencias por período.' },
-  { icon: faPalette,     title: 'Personalizable',          desc: 'Ajusta colores, textos y estilos del widget para que coincida perfectamente con tu marca.' },
-  { icon: faLink,        title: 'Fácil integración',       desc: 'Un script tag y un div. Sin frameworks requeridos. Funciona en cualquier stack.' },
-];
-
-const PLANS = [
-  {
-    name: 'Starter',
-    price: 'Gratis',
-    limit: '500 predicciones/mes',
-    features: ['1 modelo', 'Widget estándar', 'Soporte por email'],
-    cta: 'Empezar gratis',
-    highlight: false,
-  },
-  {
-    name: 'Pro',
-    price: '$29',
-    period: '/mes',
-    limit: '10 000 predicciones/mes',
-    features: ['3 modelos', 'Widget personalizado', 'Analytics avanzado', 'Soporte prioritario'],
-    cta: 'Probar Pro',
-    highlight: true,
-  },
-  {
-    name: 'Enterprise',
-    price: 'Custom',
-    limit: 'Predicciones ilimitadas',
-    features: ['Modelos ilimitados', 'Branding propio', 'SLA 99.9 %', 'Manager dedicado'],
-    cta: 'Contactar ventas',
-    highlight: false,
-  },
-];
+const STEP_ICONS  = [faFileArrowUp, faBrain, faCode];
+const FEAT_ICONS  = [faCrosshairs, faShieldHalved, faMobile, faChartLine, faPalette, faLink];
 
 function DemoModal({ onClose }) {
   const overlayRef = useRef(null);
+  const { t } = useTranslation('home');
 
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose(); };
@@ -88,8 +38,8 @@ function DemoModal({ onClose }) {
     >
       <div className="modal-card">
         <div className="modal-header">
-          <h2 className="modal-title">Predictor de Talla</h2>
-          <button className="modal-close-btn" onClick={onClose} aria-label="Cerrar">
+          <h2 className="modal-title">{t('modal.title')}</h2>
+          <button className="modal-close-btn" onClick={onClose} aria-label={t('modal.closeLabel')}>
             <FontAwesomeIcon icon={faXmark} />
           </button>
         </div>
@@ -103,14 +53,17 @@ export default function HomePage() {
   const { modelStatus } = useModel();
   const location = useLocation();
   const [demoOpen, setDemoOpen] = useState(false);
+  const { t } = useTranslation('home');
+
+  const STEPS    = t('steps.items',    { returnObjects: true });
+  const FEATURES = t('features.items', { returnObjects: true });
+  const PLANS    = t('pricing.plans',  { returnObjects: true });
 
   useEffect(() => {
     const id = location.state?.scrollTo;
     if (!id) return;
     const el = document.getElementById(id);
-    if (el) {
-      setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 80);
-    }
+    if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 80);
   }, [location.state]);
 
   const modelReady = modelStatus === 'ready';
@@ -122,14 +75,16 @@ export default function HomePage() {
       {/* ── Hero ── */}
       <section className="hero">
         <div className="hero-content">
-          <div className="hero-eyebrow">Fashion Tech · Machine Learning · SaaS</div>
+          <div className="hero-eyebrow">{t('hero.eyebrow')}</div>
           <h1 className="hero-title">
-            Tu widget de tallas con IA,<br />
-            <span className="hero-accent">listo en 5 minutos</span>
+            {t('hero.title')}<br />
+            <span className="hero-accent">{t('hero.titleAccent')}</span>
           </h1>
           <p className="hero-desc">
-            Entrena un modelo con los datos de tu marca, incrusta dos líneas de código
-            y reduce las devoluciones por talla hasta un&nbsp;<strong>40 %</strong>.
+            <Trans
+              i18nKey="home:hero.desc"
+              components={{ 1: <strong /> }}
+            />
           </p>
           <div className="hero-ctas">
             <button
@@ -138,25 +93,21 @@ export default function HomePage() {
               disabled={!modelReady}
             >
               {modelReady ? (
-                <><FontAwesomeIcon icon={faPlay} /> Ver demo en vivo</>
+                <><FontAwesomeIcon icon={faPlay} /> {t('hero.demoBtn')}</>
               ) : (
-                <><FontAwesomeIcon icon={faSpinner} spin /> Inicializando IA...</>
+                <><FontAwesomeIcon icon={faSpinner} spin /> {t('hero.initBtn')}</>
               )}
             </button>
-            <Link to="/register" className="btn-hero-secondary">Crear cuenta gratis</Link>
+            <Link to="/register" className="btn-hero-secondary">{t('hero.registerBtn')}</Link>
           </div>
           <p className="hero-hint">
-            {modelReady
-              ? 'Modelo pre-entrenado cargado — sin registro necesario'
-              : 'Entrenando modelo base en segundo plano…'}
+            {modelReady ? t('hero.hintReady') : t('hero.hintLoading')}
           </p>
         </div>
 
         <div className="hero-visual">
           <div className="widget-mockup">
-            <div className="mockup-bar">
-              <span /><span /><span />
-            </div>
+            <div className="mockup-bar"><span /><span /><span /></div>
             <div className="mockup-body">
               <div className="mockup-product">
                 <div className="mockup-img-placeholder" />
@@ -168,7 +119,7 @@ export default function HomePage() {
                     onClick={() => modelReady && setDemoOpen(true)}
                   >
                     <FontAwesomeIcon icon={faRulerCombined} />
-                    &nbsp;¿Cuál es mi talla?
+                    &nbsp;{t('hero.widgetBtn')}
                   </button>
                 </div>
               </div>
@@ -180,14 +131,14 @@ export default function HomePage() {
       {/* ── Cómo funciona ── */}
       <section className="section steps-section" id="como-funciona">
         <div className="section-inner">
-          <div className="section-label">Proceso</div>
-          <h2 className="section-title">Tres pasos para integrar la IA</h2>
+          <div className="section-label">{t('steps.label')}</div>
+          <h2 className="section-title">{t('steps.title')}</h2>
           <div className="steps-grid">
             {STEPS.map((s, i) => (
               <div key={i} className="step-card">
                 <div className="step-number">{i + 1}</div>
                 <div className="step-icon-wrap">
-                  <FontAwesomeIcon icon={s.icon} />
+                  <FontAwesomeIcon icon={STEP_ICONS[i]} />
                 </div>
                 <h3 className="step-title">{s.title}</h3>
                 <p className="step-desc">{s.desc}</p>
@@ -200,13 +151,13 @@ export default function HomePage() {
       {/* ── Funcionalidades ── */}
       <section className="section features-section" id="funcionalidades">
         <div className="section-inner">
-          <div className="section-label">Funcionalidades</div>
-          <h2 className="section-title">Todo lo que necesitas</h2>
+          <div className="section-label">{t('features.label')}</div>
+          <h2 className="section-title">{t('features.title')}</h2>
           <div className="features-grid">
             {FEATURES.map((f, i) => (
               <div key={i} className="feature-card">
                 <div className="feature-icon-wrap">
-                  <FontAwesomeIcon icon={f.icon} />
+                  <FontAwesomeIcon icon={FEAT_ICONS[i]} />
                 </div>
                 <h3 className="feature-title">{f.title}</h3>
                 <p className="feature-desc">{f.desc}</p>
@@ -220,13 +171,10 @@ export default function HomePage() {
       <section className="section embed-section">
         <div className="section-inner embed-inner">
           <div className="embed-copy">
-            <div className="section-label">Integración</div>
-            <h2 className="section-title">Dos líneas de código</h2>
-            <p className="embed-desc">
-              Pega este snippet en tu tienda. Funciona con cualquier plataforma
-              de e-commerce o HTML estático.
-            </p>
-            <Link to="/register" className="btn-nav-primary">Obtener mi API key</Link>
+            <div className="section-label">{t('embed.label')}</div>
+            <h2 className="section-title">{t('embed.title')}</h2>
+            <p className="embed-desc">{t('embed.desc')}</p>
+            <Link to="/register" className="btn-nav-primary">{t('embed.apiKeyBtn')}</Link>
           </div>
           <div className="embed-code-block">
             <div className="code-bar">
@@ -253,12 +201,12 @@ export default function HomePage() {
       {/* ── Precios ── */}
       <section className="section pricing-section" id="precios">
         <div className="section-inner">
-          <div className="section-label">Precios</div>
-          <h2 className="section-title">Simple y transparente</h2>
+          <div className="section-label">{t('pricing.label')}</div>
+          <h2 className="section-title">{t('pricing.title')}</h2>
           <div className="pricing-grid">
-            {PLANS.map((p) => (
-              <div key={p.name} className={`plan-card${p.highlight ? ' plan-card--highlight' : ''}`}>
-                {p.highlight && <div className="plan-badge">Más popular</div>}
+            {PLANS.map((p, idx) => (
+              <div key={idx} className={`plan-card${idx === 1 ? ' plan-card--highlight' : ''}`}>
+                {idx === 1 && <div className="plan-badge">{t('pricing.popular')}</div>}
                 <h3 className="plan-name">{p.name}</h3>
                 <div className="plan-price">
                   {p.price}<span className="plan-period">{p.period}</span>
@@ -273,8 +221,8 @@ export default function HomePage() {
                   ))}
                 </ul>
                 <Link
-                  to="/register"
-                  className={`plan-cta${p.highlight ? ' plan-cta--primary' : ''}`}
+                  to={idx === 2 ? '/contact' : '/register'}
+                  className={`plan-cta${idx === 1 ? ' plan-cta--primary' : ''}`}
                 >
                   {p.cta}
                 </Link>
@@ -282,7 +230,7 @@ export default function HomePage() {
             ))}
           </div>
           <div className="pricing-more">
-            <Link to="/pricing" className="btn-nav-ghost">Ver comparación completa de planes</Link>
+            <Link to="/pricing" className="btn-nav-ghost">{t('pricing.morePlans')}</Link>
           </div>
         </div>
       </section>

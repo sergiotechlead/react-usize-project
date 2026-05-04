@@ -1,0 +1,56 @@
+{
+  "hero": {
+    "eyebrow": "Fashion Tech · Machine Learning · SaaS",
+    "title": "Tu widget de tallas con IA,",
+    "titleAccent": "listo en 5 minutos",
+    "desc": "Entrena un modelo con los datos de tu marca, incrusta dos líneas de código y reduce las devoluciones por talla hasta un <1>40 %</1>.",
+    "demoBtn": "Ver demo en vivo",
+    "initBtn": "Inicializando IA...",
+    "registerBtn": "Crear cuenta gratis",
+    "hintReady": "Modelo pre-entrenado cargado — sin registro necesario",
+    "hintLoading": "Entrenando modelo base en segundo plano…",
+    "widgetBtn": "¿Cuál es mi talla?"
+  },
+  "steps": {
+    "label": "Proceso",
+    "title": "Tres pasos para integrar la IA",
+    "items": [
+      { "title": "Sube tus datos", "desc": "Descarga la plantilla Excel, rellénala con las medidas y tallas de tu marca y cárgala en el dashboard." },
+      { "title": "Entrena tu modelo", "desc": "Nuestra IA aprende los patrones de tu marca en segundos, directamente en el navegador. Sin servidores externos." },
+      { "title": "Integra y listo", "desc": "Copia dos líneas de código en tu tienda. Tus clientes encontrarán su talla perfecta en tiempo real." }
+    ]
+  },
+  "features": {
+    "label": "Funcionalidades",
+    "title": "Todo lo que necesitas",
+    "items": [
+      { "title": "Predicción precisa", "desc": "Red neuronal con 4 variables de entrada y más del 94 % de accuracy en datos de prueba." },
+      { "title": "Datos privados", "desc": "El modelo se entrena en el navegador del usuario. Ningún dato personal sale de su dispositivo." },
+      { "title": "Responsive", "desc": "El widget se adapta a cualquier tienda: Shopify, WooCommerce, Vtex o HTML puro." },
+      { "title": "Analytics en tiempo real", "desc": "Monitorea cuántas predicciones se realizan, distribución de tallas y tendencias por período." },
+      { "title": "Personalizable", "desc": "Ajusta colores, textos y estilos del widget para que coincida perfectamente con tu marca." },
+      { "title": "Fácil integración", "desc": "Un script tag y un div. Sin frameworks requeridos. Funciona en cualquier stack." }
+    ]
+  },
+  "embed": {
+    "label": "Integración",
+    "title": "Dos líneas de código",
+    "desc": "Pega este snippet en tu tienda. Funciona con cualquier plataforma de e-commerce o HTML estático.",
+    "apiKeyBtn": "Obtener mi API key"
+  },
+  "pricing": {
+    "label": "Precios",
+    "title": "Simple y transparente",
+    "morePlans": "Ver comparación completa de planes",
+    "popular": "Más popular",
+    "plans": [
+      { "price": "Gratis", "limit": "500 predicciones/mes", "features": ["1 modelo", "Widget estándar", "Soporte por email"], "cta": "Empezar gratis" },
+      { "price": "$29", "period": "/mes", "limit": "10 000 predicciones/mes", "features": ["3 modelos", "Widget personalizado", "Analytics avanzado", "Soporte prioritario"], "cta": "Probar Pro" },
+      { "price": "Custom", "limit": "Predicciones ilimitadas", "features": ["Modelos ilimitados", "Branding propio", "SLA 99.9 %", "Manager dedicado"], "cta": "Contactar ventas" }
+    ]
+  },
+  "modal": {
+    "title": "Predictor de Talla",
+    "closeLabel": "Cerrar"
+  }
+}

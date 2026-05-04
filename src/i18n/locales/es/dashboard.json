@@ -1,0 +1,66 @@
+{
+  "nav": {
+    "overview": "Resumen",
+    "model": "Modelo IA",
+    "integration": "Integración",
+    "customization": "Personalización"
+  },
+  "topbar": {
+    "welcomePre": "Bienvenido,"
+  },
+  "logout": "Cerrar sesión",
+  "stats": {
+    "predictions": "Predicciones este mes",
+    "accuracy": "Accuracy del modelo",
+    "users": "Usuarios únicos",
+    "satisfaction": "Tasa de satisfacción",
+    "vsPrev": "vs mes anterior"
+  },
+  "dist": {
+    "title": "Distribución de tallas predichas"
+  },
+  "model": {
+    "statusTitle": "Estado del modelo",
+    "statusReady": "Modelo activo",
+    "statusInitializing": "Inicializando…",
+    "statusChecking": "Verificando…",
+    "statusError": "Error",
+    "metaPlan": "Plan",
+    "metaBrand": "Marca",
+    "metaInputs": "Entradas",
+    "metaArch": "Arquitectura",
+    "retrain": "Reentrenar con tus datos",
+    "retrainDesc": "Descarga la plantilla, rellénala con los datos de tu marca y cárgala para entrenar un modelo personalizado.",
+    "downloadBtn": "Descargar plantilla Excel",
+    "uploadBtn": "Cargar Excel con datos",
+    "rowsLoaded": "{{count}} filas cargadas correctamente",
+    "combineBase": "Combinar con datos base ({{count}} muestras)",
+    "trainBtn": "Iniciar entrenamiento",
+    "training": "Entrenando…",
+    "logStart": "Iniciando entrenamiento con {{count}} muestras…",
+    "logTraining": "Entrenando red neuronal…",
+    "logEpoch": "Epoch {{epoch}}/{{total}}  —  loss: {{loss}}",
+    "logComplete": "Entrenamiento completo — Accuracy: {{acc}}%",
+    "logSaved": "Modelo guardado en localStorage",
+    "logError": "Error: {{msg}}",
+    "moreErrors": "…y {{count}} errores más"
+  },
+  "integration": {
+    "apiKeyTitle": "Tu API key",
+    "apiKeyDesc": "Úsala para autenticar el widget en tu tienda.",
+    "apiKeyHint": "Mantén esta clave privada. No la expongas en código público.",
+    "copy": "Copiar",
+    "copied": "Copiado",
+    "snippetTitle": "Snippet de integración",
+    "copyCode": "Copiar código",
+    "platformsTitle": "Plataformas compatibles"
+  },
+  "customization": {
+    "title": "Configuración del widget",
+    "colorLabel": "Color principal de la marca",
+    "btnLabel": "Texto del botón",
+    "saveBtn": "Guardar configuración",
+    "previewTitle": "Vista previa",
+    "previewHint": "Vista previa aproximada. Los estilos finales pueden variar según tu tienda."
+  }
+}

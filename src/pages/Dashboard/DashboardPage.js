@@ -9,17 +9,11 @@ import {
   faArrowTrendUp, faArrowTrendDown, faChevronRight,
 } from '@fortawesome/free-solid-svg-icons';
 import * as XLSX from 'xlsx';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useModel } from '../../context/ModelContext';
 import { DEFAULT_INPUT_DATA, DEFAULT_LABELS, trainModel, parseExcelRows } from '../../ml/modelConfig';
 import './DashboardPage.css';
-
-const MOCK_STATS = [
-  { label: 'Predicciones este mes', value: '1 247', delta: '+12 %', up: true  },
-  { label: 'Accuracy del modelo',   value: '94.3 %', delta: '+1.2 %', up: true  },
-  { label: 'Usuarios únicos',       value: '89',     delta: '+8 %',  up: true  },
-  { label: 'Tasa de satisfacción',  value: '4.7 / 5', delta: '-0.1', up: false },
-];
 
 const SIZE_DIST = [
   { size: 'S',  pct: 18, color: 'var(--color-accent)' },
@@ -28,12 +22,8 @@ const SIZE_DIST = [
   { size: 'XL', pct: 18, color: '#ef7b7b' },
 ];
 
-const NAV_ITEMS = [
-  { id: 'overview',      icon: faGauge,   label: 'Resumen' },
-  { id: 'model',         icon: faBrain,   label: 'Modelo IA' },
-  { id: 'integration',   icon: faCode,    label: 'Integración' },
-  { id: 'customization', icon: faPalette, label: 'Personalización' },
-];
+const NAV_ICONS = [faGauge, faBrain, faCode, faPalette];
+const NAV_IDS   = ['overview', 'model', 'integration', 'customization'];
 
 function downloadTemplate() {
   const rows = DEFAULT_INPUT_DATA.slice(0, 8).map((r, i) => ({
@@ -48,15 +38,22 @@ function downloadTemplate() {
 }
 
 function StatCards() {
+  const { t } = useTranslation('dashboard');
+  const MOCK_STATS = [
+    { key: 'predictions', value: '1 247', delta: '+12 %', up: true  },
+    { key: 'accuracy',    value: '94.3 %', delta: '+1.2 %', up: true  },
+    { key: 'users',       value: '89',     delta: '+8 %',  up: true  },
+    { key: 'satisfaction',value: '4.7 / 5', delta: '-0.1', up: false },
+  ];
   return (
     <div className="stats-grid">
       {MOCK_STATS.map(s => (
-        <div key={s.label} className="stat-card">
-          <p className="stat-label">{s.label}</p>
+        <div key={s.key} className="stat-card">
+          <p className="stat-label">{t(`stats.${s.key}`)}</p>
           <p className="stat-value">{s.value}</p>
           <span className={`stat-delta ${s.up ? 'up' : 'down'}`}>
             <FontAwesomeIcon icon={s.up ? faArrowTrendUp : faArrowTrendDown} />
-            {s.delta} vs mes anterior
+            {s.delta} {t('stats.vsPrev')}
           </span>
         </div>
       ))}
@@ -65,9 +62,10 @@ function StatCards() {
 }
 
 function SizeDistChart() {
+  const { t } = useTranslation('dashboard');
   return (
     <div className="dist-card">
-      <h3 className="card-title">Distribución de tallas predichas</h3>
+      <h3 className="card-title">{t('dist.title')}</h3>
       <div className="dist-bars">
         {SIZE_DIST.map(({ size, pct, color }) => (
           <div key={size} className="dist-row">
@@ -85,6 +83,7 @@ function SizeDistChart() {
 
 function ModelSection({ user }) {
   const { modelStatus, markDirty, markReady } = useModel();
+  const { t } = useTranslation('dashboard');
   const [uploadedData, setUploadedData]   = useState(null);
   const [parseErrors, setParseErrors]     = useState([]);
   const [isTraining, setIsTraining]       = useState(false);
@@ -92,7 +91,7 @@ function ModelSection({ user }) {
   const [trainLogs, setTrainLogs]         = useState([]);
   const [isTrained, setIsTrained]         = useState(false);
   const [includeBase, setIncludeBase]     = useState(true);
-  const fileRef  = useRef(null);
+  const fileRef   = useRef(null);
   const logEndRef = useRef(null);
 
   function addLog(type, text) {
@@ -127,28 +126,28 @@ function ModelSection({ user }) {
       : uploadedData.labels;
 
     const EPOCHS = 201;
-    addLog('info', `Iniciando entrenamiento con ${inputData.length} muestras…`);
+    addLog('info', t('model.logStart', { count: inputData.length }));
 
     try {
       const result = await trainModel({
         inputData, labels, epochs: EPOCHS,
         onEpoch: (epoch, { loss }) => {
           setTrainProgress(Math.round(((epoch + 1) / EPOCHS) * 100));
-          if (epoch === 0) addLog('start', 'Entrenando red neuronal…');
+          if (epoch === 0) addLog('start', t('model.logTraining'));
           if (epoch % 50 === 0 && epoch > 0)
-            addLog('epoch', `Epoch ${epoch}/${EPOCHS - 1}  —  loss: ${loss.toFixed(6)}`);
+            addLog('epoch', t('model.logEpoch', { epoch, total: EPOCHS - 1, loss: loss.toFixed(6) }));
         },
       });
 
       const accKey = Object.keys(result.history).find(k => k.toLowerCase().includes('acc')) ?? 'acc';
       const h = result.history[accKey] ?? [];
       const acc = h.length ? Math.round(h[h.length - 1] * 10000) / 100 : 100;
-      addLog('success', `Entrenamiento completo — Accuracy: ${acc}%`);
-      addLog('success', 'Modelo guardado en localStorage');
+      addLog('success', t('model.logComplete', { acc }));
+      addLog('success', t('model.logSaved'));
       setIsTrained(true);
       markReady();
     } catch (err) {
-      addLog('error', `Error: ${err.message}`);
+      addLog('error', t('model.logError', { msg: err.message }));
     } finally {
       setIsTraining(false);
       setTrainProgress(100);
@@ -156,46 +155,43 @@ function ModelSection({ user }) {
   }
 
   function statusIcon() {
-    if (modelStatus === 'ready')        return <FontAwesomeIcon icon={faCircleCheck} />;
-    if (modelStatus === 'error')        return <FontAwesomeIcon icon={faCircleXmark} />;
+    if (modelStatus === 'ready')  return <FontAwesomeIcon icon={faCircleCheck} />;
+    if (modelStatus === 'error')  return <FontAwesomeIcon icon={faCircleXmark} />;
     return <FontAwesomeIcon icon={faSpinner} spin />;
   }
   function statusLabel() {
-    if (modelStatus === 'ready')        return 'Modelo activo';
-    if (modelStatus === 'initializing') return 'Inicializando…';
-    if (modelStatus === 'checking')     return 'Verificando…';
-    return 'Error';
+    if (modelStatus === 'ready')        return t('model.statusReady');
+    if (modelStatus === 'initializing') return t('model.statusInitializing');
+    if (modelStatus === 'checking')     return t('model.statusChecking');
+    return t('model.statusError');
   }
 
   return (
     <div className="section-content">
       <div className="cards-row">
         <div className="dash-card">
-          <h3 className="card-title">Estado del modelo</h3>
+          <h3 className="card-title">{t('model.statusTitle')}</h3>
           <div className={`model-status-badge ${modelStatus}`}>
             {statusIcon()} {statusLabel()}
           </div>
           <dl className="model-meta">
-            <div><dt>Plan</dt><dd>{user.plan}</dd></div>
-            <div><dt>Marca</dt><dd>{user.brand}</dd></div>
-            <div><dt>Entradas</dt><dd>espalda · altura · peso · edad</dd></div>
-            <div><dt>Arquitectura</dt><dd>4 → 100 → 1000 → 100 → 4</dd></div>
+            <div><dt>{t('model.metaPlan')}</dt><dd>{user.plan}</dd></div>
+            <div><dt>{t('model.metaBrand')}</dt><dd>{user.brand}</dd></div>
+            <div><dt>{t('model.metaInputs')}</dt><dd>espalda · altura · peso · edad</dd></div>
+            <div><dt>{t('model.metaArch')}</dt><dd>4 → 100 → 1000 → 100 → 4</dd></div>
           </dl>
         </div>
 
         <div className="dash-card flex-grow">
-          <h3 className="card-title">Reentrenar con tus datos</h3>
-          <p className="card-desc">
-            Descarga la plantilla, rellénala con los datos de tu marca y cárgala
-            para entrenar un modelo personalizado.
-          </p>
+          <h3 className="card-title">{t('model.retrain')}</h3>
+          <p className="card-desc">{t('model.retrainDesc')}</p>
 
           <div className="upload-actions">
             <button className="btn-outline" onClick={downloadTemplate}>
-              <FontAwesomeIcon icon={faDownload} /> Descargar plantilla Excel
+              <FontAwesomeIcon icon={faDownload} /> {t('model.downloadBtn')}
             </button>
             <button className="btn-outline" onClick={() => fileRef.current?.click()}>
-              <FontAwesomeIcon icon={faUpload} /> Cargar Excel con datos
+              <FontAwesomeIcon icon={faUpload} /> {t('model.uploadBtn')}
             </button>
             <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv"
               style={{ display: 'none' }} onChange={handleFileUpload} />
@@ -203,13 +199,13 @@ function ModelSection({ user }) {
 
           {uploadedData && (
             <div className="upload-summary success">
-              <FontAwesomeIcon icon={faCircleCheck} /> {uploadedData.inputData.length} filas cargadas correctamente
+              <FontAwesomeIcon icon={faCircleCheck} /> {t('model.rowsLoaded', { count: uploadedData.inputData.length })}
             </div>
           )}
           {parseErrors.length > 0 && (
             <div className="upload-summary error">
               {parseErrors.slice(0, 3).map((e, i) => <div key={i}>{e}</div>)}
-              {parseErrors.length > 3 && <div>…y {parseErrors.length - 3} errores más</div>}
+              {parseErrors.length > 3 && <div>{t('model.moreErrors', { count: parseErrors.length - 3 })}</div>}
             </div>
           )}
 
@@ -217,15 +213,15 @@ function ModelSection({ user }) {
             <label className="checkbox-label">
               <input type="checkbox" checked={includeBase}
                 onChange={e => setIncludeBase(e.target.checked)} />
-              Combinar con datos base ({DEFAULT_INPUT_DATA.length} muestras)
+              {t('model.combineBase', { count: DEFAULT_INPUT_DATA.length })}
             </label>
           )}
 
           {uploadedData && (
             <button className="btn-primary-dash" onClick={handleTrain} disabled={isTraining}>
               {isTraining
-                ? <><FontAwesomeIcon icon={faSpinner} spin /> Entrenando…</>
-                : <><FontAwesomeIcon icon={faPlay} /> Iniciar entrenamiento</>
+                ? <><FontAwesomeIcon icon={faSpinner} spin /> {t('model.training')}</>
+                : <><FontAwesomeIcon icon={faPlay} /> {t('model.trainBtn')}</>
               }
             </button>
           )}
@@ -252,7 +248,8 @@ function ModelSection({ user }) {
 }
 
 function IntegrationSection({ user }) {
-  const [copied, setCopied] = useState(false);
+  const { t } = useTranslation('dashboard');
+  const [copied, setCopied]       = useState(false);
   const [copiedKey, setCopiedKey] = useState(false);
 
   const snippet = `<!-- 1. Agrega en tu <head> -->
@@ -287,23 +284,23 @@ function IntegrationSection({ user }) {
       <div className="cards-row">
         <div className="dash-card">
           <h3 className="card-title">
-            <FontAwesomeIcon icon={faKey} className="title-icon" /> Tu API key
+            <FontAwesomeIcon icon={faKey} className="title-icon" /> {t('integration.apiKeyTitle')}
           </h3>
-          <p className="card-desc">Úsala para autenticar el widget en tu tienda.</p>
+          <p className="card-desc">{t('integration.apiKeyDesc')}</p>
           <div className="api-key-box">
             <code>{user.apiKey}</code>
             <button className="btn-copy-inline" onClick={copyKey}>
-              <FontAwesomeIcon icon={faCopy} /> {copiedKey ? 'Copiado' : 'Copiar'}
+              <FontAwesomeIcon icon={faCopy} /> {copiedKey ? t('integration.copied') : t('integration.copy')}
             </button>
           </div>
-          <p className="card-hint">Mantén esta clave privada. No la expongas en código público.</p>
+          <p className="card-hint">{t('integration.apiKeyHint')}</p>
         </div>
 
         <div className="dash-card flex-grow">
           <div className="code-card-header">
-            <h3 className="card-title">Snippet de integración</h3>
+            <h3 className="card-title">{t('integration.snippetTitle')}</h3>
             <button className="btn-copy" onClick={copySnippet}>
-              <FontAwesomeIcon icon={faCopy} /> {copied ? 'Copiado' : 'Copiar código'}
+              <FontAwesomeIcon icon={faCopy} /> {copied ? t('integration.copied') : t('integration.copyCode')}
             </button>
           </div>
           <pre className="code-pre"><code>{snippet}</code></pre>
@@ -311,7 +308,7 @@ function IntegrationSection({ user }) {
       </div>
 
       <div className="dash-card info-card">
-        <h3 className="card-title">Plataformas compatibles</h3>
+        <h3 className="card-title">{t('integration.platformsTitle')}</h3>
         <div className="platforms-grid">
           {['Shopify', 'WooCommerce', 'Vtex', 'Magento', 'PrestaShop', 'HTML puro'].map(p => (
             <span key={p} className="platform-tag">{p}</span>
@@ -323,17 +320,18 @@ function IntegrationSection({ user }) {
 }
 
 function CustomizationSection() {
-  const [color, setColor]     = useState('#53a0f8');
+  const { t } = useTranslation('dashboard');
+  const [color,  setColor]  = useState('#53a0f8');
   const [btnText, setBtnText] = useState('¿Cuál es mi talla?');
 
   return (
     <div className="section-content">
       <div className="cards-row">
         <div className="dash-card">
-          <h3 className="card-title">Configuración del widget</h3>
+          <h3 className="card-title">{t('customization.title')}</h3>
 
           <div className="custom-field">
-            <label>Color principal de la marca</label>
+            <label>{t('customization.colorLabel')}</label>
             <div className="color-row">
               <input type="color" value={color} onChange={e => setColor(e.target.value)} />
               <code>{color}</code>
@@ -341,18 +339,18 @@ function CustomizationSection() {
           </div>
 
           <div className="custom-field">
-            <label>Texto del botón</label>
+            <label>{t('customization.btnLabel')}</label>
             <input type="text" className="text-input" value={btnText}
               onChange={e => setBtnText(e.target.value)} maxLength={60} />
           </div>
 
           <button className="btn-primary-dash" onClick={() => {}}>
-            Guardar configuración
+            {t('customization.saveBtn')}
           </button>
         </div>
 
         <div className="dash-card">
-          <h3 className="card-title">Vista previa</h3>
+          <h3 className="card-title">{t('customization.previewTitle')}</h3>
           <div className="preview-mockup">
             <div className="preview-product-img" />
             <div className="preview-info">
@@ -364,7 +362,7 @@ function CustomizationSection() {
             </div>
           </div>
           <p className="card-hint" style={{ marginTop: 12 }}>
-            Vista previa aproximada. Los estilos finales pueden variar según tu tienda.
+            {t('customization.previewHint')}
           </p>
         </div>
       </div>
@@ -375,12 +373,15 @@ function CustomizationSection() {
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const navigate         = useNavigate();
+  const { t }            = useTranslation('dashboard');
   const [activeTab, setActiveTab] = useState('overview');
 
   function handleLogout() {
     logout();
     navigate('/', { replace: true });
   }
+
+  const activeLabel = t(`nav.${activeTab}`);
 
   return (
     <div className="dashboard">
@@ -393,15 +394,15 @@ export default function DashboardPage() {
             <span className="sidebar-brand-name">USize</span>
           </Link>
           <nav className="sidebar-nav">
-            {NAV_ITEMS.map(item => (
+            {NAV_IDS.map((id, i) => (
               <button
-                key={item.id}
-                className={`sidebar-item${activeTab === item.id ? ' active' : ''}`}
-                onClick={() => setActiveTab(item.id)}
+                key={id}
+                className={`sidebar-item${activeTab === id ? ' active' : ''}`}
+                onClick={() => setActiveTab(id)}
               >
-                <FontAwesomeIcon icon={item.icon} className="sidebar-icon" />
-                <span>{item.label}</span>
-                {activeTab === item.id && (
+                <FontAwesomeIcon icon={NAV_ICONS[i]} className="sidebar-icon" />
+                <span>{t(`nav.${id}`)}</span>
+                {activeTab === id && (
                   <FontAwesomeIcon icon={faChevronRight} className="sidebar-active-arrow" />
                 )}
               </button>
@@ -417,7 +418,7 @@ export default function DashboardPage() {
             </div>
           </div>
           <button className="sidebar-logout" onClick={handleLogout}>
-            <FontAwesomeIcon icon={faRightFromBracket} /> Cerrar sesión
+            <FontAwesomeIcon icon={faRightFromBracket} /> {t('logout')}
           </button>
         </div>
       </aside>
@@ -425,8 +426,10 @@ export default function DashboardPage() {
       <main className="dash-main">
         <div className="dash-topbar">
           <div>
-            <h1 className="dash-title">{NAV_ITEMS.find(i => i.id === activeTab)?.label}</h1>
-            <p className="dash-subtitle">Bienvenido, <strong>{user.name}</strong></p>
+            <h1 className="dash-title">{activeLabel}</h1>
+            <p className="dash-subtitle">
+              {t('topbar.welcomePre')} <strong>{user.name}</strong>
+            </p>
           </div>
         </div>
 

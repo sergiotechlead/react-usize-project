@@ -1,0 +1,36 @@
+{
+  "label": "Contacto",
+  "title": "Hablemos de tu proyecto",
+  "lead": "¿Tienes una tienda de moda de alto volumen o necesitas una integración personalizada? Cuéntanos tu caso y te preparamos una propuesta a medida.",
+  "cards": {
+    "support": { "title": "Soporte Enterprise", "desc": "Manager de cuenta dedicado y SLA 99.9 % de disponibilidad." },
+    "response": { "title": "Tiempo de respuesta", "desc": "Respondemos en menos de 24 horas en días hábiles." },
+    "email": { "title": "Email directo" }
+  },
+  "form": {
+    "name": "Nombre completo",
+    "namePlaceholder": "Tu nombre",
+    "company": "Empresa",
+    "companyPlaceholder": "Tu empresa",
+    "email": "Email de trabajo",
+    "emailPlaceholder": "tu@empresa.com",
+    "role": "Cargo",
+    "rolePlaceholder": "CEO, CTO, Marketing…",
+    "volume": "Volumen esperado de predicciones",
+    "volumeDefault": "Selecciona un rango…",
+    "message": "Cuéntanos tu caso",
+    "messagePlaceholder": "Describe tu tienda, plataforma y qué necesitas de USize…",
+    "submit": "Enviar mensaje",
+    "submitting": "Enviando…",
+    "volumeOptions": [
+      "Menos de 1 000 predicciones/mes",
+      "1 000 – 10 000 predicciones/mes",
+      "10 000 – 100 000 predicciones/mes",
+      "Más de 100 000 predicciones/mes"
+    ]
+  },
+  "success": {
+    "title": "Mensaje enviado",
+    "desc": "Gracias por contactarnos. Revisaremos tu solicitud y te responderemos en menos de 24 horas."
+  }
+}

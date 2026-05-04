@@ -1,0 +1,21 @@
+{
+  "subtitle": "Ingresa tus medidas para obtener tu talla recomendada.",
+  "back": "Ancho de espalda",
+  "height": "Altura",
+  "weight": "Peso",
+  "age": "Edad",
+  "ageUnit": "años",
+  "predict": "Predecir mi talla",
+  "predicting": "Prediciendo...",
+  "checkingModel": "Verificando modelo...",
+  "initializingAI": "Inicializando IA...",
+  "resultLabel": "Tu talla sugerida es",
+  "tryAgain": "Volver a intentar",
+  "errorModel": "Error al cargar el modelo. Verifica que haya sido entrenado.",
+  "initializing": "Entrenando modelo base, esto toma unos segundos…",
+  "meter": {
+    "tight": "Ajustado",
+    "perfect": "A medida",
+    "loose": "Holgado"
+  }
+}

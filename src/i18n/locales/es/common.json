@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "howItWorks": "Cómo funciona",
+    "docs": "Documentación",
+    "pricing": "Precios",
+    "login": "Iniciar sesión",
+    "register": "Empezar gratis",
+    "dashboard": "Dashboard",
+    "toggleMenu": "Menú"
+  },
+  "footer": {
+    "tagline": "El widget de predicción de tallas con IA para tu tienda de moda.",
+    "builtWith": "Construido con React & TensorFlow.js",
+    "groups": {
+      "product": "Producto",
+      "resources": "Recursos",
+      "account": "Cuenta"
+    },
+    "links": {
+      "howItWorks": "Cómo funciona",
+      "features": "Funcionalidades",
+      "pricing": "Precios",
+      "docs": "Documentación",
+      "apiRef": "Referencia API",
+      "faq": "FAQ",
+      "login": "Iniciar sesión",
+      "register": "Registrarse",
+      "contact": "Contacto"
+    }
+  },
+  "lang": {
+    "select": "Idioma",
+    "es": "Español",
+    "en": "English"
+  }
+}

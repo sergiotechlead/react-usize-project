@@ -1,0 +1,71 @@
+{
+  "hero": {
+    "label": "Precios",
+    "title": "Simple y transparente",
+    "desc": "Sin tarifas ocultas. Cancela en cualquier momento. Empieza gratis y escala cuando lo necesites.",
+    "monthly": "Mensual",
+    "annual": "Anual",
+    "annualBadge": "-20 %"
+  },
+  "priceCustom": "Custom",
+  "priceFree": "Gratis",
+  "perMonth": "/mes",
+  "plans": [
+    {
+      "name": "Starter",
+      "limit": "500 predicciones/mes",
+      "desc": "Ideal para tiendas pequeñas que quieren probar la tecnología.",
+      "cta": "Empezar gratis",
+      "features": ["1 modelo de tallas", "Widget estándar", "Predicciones básicas (S/M/L/XL)", "Dashboard de analytics", "Soporte por email"]
+    },
+    {
+      "name": "Pro",
+      "limit": "10 000 predicciones/mes",
+      "desc": "Para marcas en crecimiento que necesitan más potencia y personalización.",
+      "cta": "Probar Pro",
+      "badge": "Más popular",
+      "features": ["3 modelos de tallas", "Widget personalizado (colores, texto)", "Predicciones avanzadas", "Analytics con exportación CSV", "Soporte prioritario", "Webhook de eventos"]
+    },
+    {
+      "name": "Enterprise",
+      "limit": "Predicciones ilimitadas",
+      "desc": "Para grandes marcas y plataformas con requisitos específicos.",
+      "cta": "Contactar ventas",
+      "features": ["Modelos ilimitados", "Branding propio (white-label)", "SLA 99.9 %", "Manager de cuenta dedicado", "Integración personalizada", "Facturación corporativa"]
+    }
+  ],
+  "comparison": {
+    "label": "Comparación",
+    "title": "¿Qué incluye cada plan?",
+    "colFeature": "Funcionalidad",
+    "rows": [
+      { "label": "Predicciones/mes",     "starter": "500",       "pro": "10 000",      "enterprise": "Ilimitadas" },
+      { "label": "Modelos de tallas",    "starter": "1",         "pro": "3",           "enterprise": "Ilimitados" },
+      { "label": "Widget personalizado", "starter": false,       "pro": true,          "enterprise": true },
+      { "label": "Analytics avanzado",   "starter": false,       "pro": true,          "enterprise": true },
+      { "label": "Exportación CSV",      "starter": false,       "pro": true,          "enterprise": true },
+      { "label": "Webhook de eventos",   "starter": false,       "pro": true,          "enterprise": true },
+      { "label": "White-label",          "starter": false,       "pro": false,         "enterprise": true },
+      { "label": "SLA garantizado",      "starter": false,       "pro": false,         "enterprise": true },
+      { "label": "Manager dedicado",     "starter": false,       "pro": false,         "enterprise": true },
+      { "label": "Soporte",              "starter": "Email",     "pro": "Prioritario", "enterprise": "Dedicado" }
+    ]
+  },
+  "faq": {
+    "label": "FAQ",
+    "title": "Preguntas frecuentes",
+    "items": [
+      { "q": "¿Puedo cambiar de plan en cualquier momento?", "a": "Sí. Puedes actualizar o degradar tu plan desde el dashboard en cualquier momento. Los cambios aplican inmediatamente." },
+      { "q": "¿Qué pasa si supero el límite de predicciones?", "a": "Las predicciones adicionales se cobran a $0.002 por predicción en los planes Starter y Pro. En Enterprise el límite es ilimitado." },
+      { "q": "¿Hay un período de prueba para el plan Pro?", "a": "El plan Pro incluye 14 días de prueba gratuita. No se requiere tarjeta de crédito para empezar." },
+      { "q": "¿Cómo funciona el entrenamiento del modelo en el navegador?", "a": "Usamos TensorFlow.js para entrenar la red neuronal directamente en el navegador del usuario. Los datos nunca salen del dispositivo." },
+      { "q": "¿Puedo usar el widget en múltiples tiendas?", "a": "Cada tienda requiere su propia API key. En el plan Pro puedes tener hasta 3 modelos para 3 tiendas distintas." }
+    ]
+  },
+  "cta": {
+    "title": "Empieza hoy sin costo",
+    "desc": "Configura tu primer modelo en menos de 5 minutos. Sin tarjeta de crédito.",
+    "primary": "Crear cuenta gratis",
+    "secondary": "Ver documentación"
+  }
+}

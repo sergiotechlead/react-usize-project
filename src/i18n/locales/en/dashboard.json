@@ -1,0 +1,66 @@
+{
+  "nav": {
+    "overview": "Overview",
+    "model": "AI Model",
+    "integration": "Integration",
+    "customization": "Customization"
+  },
+  "topbar": {
+    "welcomePre": "Welcome,"
+  },
+  "logout": "Sign out",
+  "stats": {
+    "predictions": "Predictions this month",
+    "accuracy": "Model accuracy",
+    "users": "Unique users",
+    "satisfaction": "Satisfaction rate",
+    "vsPrev": "vs previous month"
+  },
+  "dist": {
+    "title": "Predicted size distribution"
+  },
+  "model": {
+    "statusTitle": "Model status",
+    "statusReady": "Model active",
+    "statusInitializing": "Initializing…",
+    "statusChecking": "Checking…",
+    "statusError": "Error",
+    "metaPlan": "Plan",
+    "metaBrand": "Brand",
+    "metaInputs": "Inputs",
+    "metaArch": "Architecture",
+    "retrain": "Retrain with your data",
+    "retrainDesc": "Download the template, fill it with your brand's data, and upload it to train a custom model.",
+    "downloadBtn": "Download Excel template",
+    "uploadBtn": "Upload Excel with data",
+    "rowsLoaded": "{{count}} rows loaded successfully",
+    "combineBase": "Combine with base data ({{count}} samples)",
+    "trainBtn": "Start training",
+    "training": "Training…",
+    "logStart": "Starting training with {{count}} samples…",
+    "logTraining": "Training neural network…",
+    "logEpoch": "Epoch {{epoch}}/{{total}}  —  loss: {{loss}}",
+    "logComplete": "Training complete — Accuracy: {{acc}}%",
+    "logSaved": "Model saved to localStorage",
+    "logError": "Error: {{msg}}",
+    "moreErrors": "…and {{count}} more errors"
+  },
+  "integration": {
+    "apiKeyTitle": "Your API key",
+    "apiKeyDesc": "Use it to authenticate the widget in your store.",
+    "apiKeyHint": "Keep this key private. Do not expose it in public code.",
+    "copy": "Copy",
+    "copied": "Copied",
+    "snippetTitle": "Integration snippet",
+    "copyCode": "Copy code",
+    "platformsTitle": "Compatible platforms"
+  },
+  "customization": {
+    "title": "Widget settings",
+    "colorLabel": "Brand primary color",
+    "btnLabel": "Button text",
+    "saveBtn": "Save settings",
+    "previewTitle": "Preview",
+    "previewHint": "Approximate preview. Final styles may vary depending on your store."
+  }
+}

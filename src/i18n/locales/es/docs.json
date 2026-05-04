@@ -1,0 +1,134 @@
+{
+  "sidebar": "Documentación",
+  "mobileMenu": "Menú de documentación",
+  "copy": "Copiar",
+  "copied": "Copiado",
+  "sections": {
+    "intro": "Introducción",
+    "quickstart": "Instalación rápida",
+    "training": "Datos de entrenamiento",
+    "options": "Opciones del widget",
+    "api": "Referencia de la API",
+    "integration": "Plataformas",
+    "faq": "Preguntas frecuentes"
+  },
+  "intro": {
+    "title": "Introducción a USize",
+    "lead": "USize es un SaaS que permite a cualquier tienda de moda añadir un widget inteligente de predicción de tallas entrenado con los datos específicos de su marca.",
+    "howTitle": "¿Cómo funciona?",
+    "howDesc": "La arquitectura se basa en TensorFlow.js, lo que permite que el modelo de red neuronal se entrene y ejecute directamente en el navegador del usuario. Esto garantiza máxima privacidad ya que ningún dato personal abandona el dispositivo.",
+    "steps": [
+      "El comercio sube sus datos de tallas a través del dashboard.",
+      "El modelo se entrena en el navegador en segundos.",
+      "Se genera un snippet de integración único con tu API key.",
+      "Los visitantes de tu tienda obtienen predicciones personalizadas."
+    ],
+    "archTitle": "Arquitectura del modelo",
+    "archDesc": "La red neuronal acepta 4 variables de entrada:",
+    "archTable": {
+      "colVar": "Variable",
+      "colUnit": "Unidad",
+      "colRange": "Rango típico",
+      "colDesc": "Descripción",
+      "rows": [
+        { "var": "espalda", "unit": "cm",   "range": "38–56",   "desc": "Ancho de espalda" },
+        { "var": "altura",  "unit": "cm",   "range": "155–190", "desc": "Altura total" },
+        { "var": "peso",    "unit": "kg",   "range": "50–100",  "desc": "Peso corporal" },
+        { "var": "edad",    "unit": "años", "range": "18–65",   "desc": "Edad de la persona" }
+      ]
+    },
+    "archOutputPre": "La salida es una clasificación de 4 clases:",
+    "callout": "La arquitectura de la red es: <strong>4 → 100 → 1000 → 100 → 4 (softmax)</strong>. Entrenada con Adam optimizer y categorical crossentropy."
+  },
+  "quickstart": {
+    "title": "Instalación rápida",
+    "lead": "Integra el widget de predicción de tallas en menos de 5 minutos.",
+    "step1Title": "Paso 1 — Crea tu cuenta",
+    "step1": "<link>Regístrate</link> para obtener tu API key personal. El plan Starter es completamente gratuito.",
+    "step2Title": "Paso 2 — Entrena tu modelo",
+    "step2": "Descarga la plantilla Excel desde tu dashboard, rellénala con los datos de medidas y tallas de tu marca, y cárgala para entrenar el modelo.",
+    "step2Callout": "Necesitas al menos <strong>20 filas de datos</strong> para obtener predicciones confiables. Te recomendamos incluir al menos 10 muestras por talla.",
+    "step3Title": "Paso 3 — Pega el snippet",
+    "step3": "Añade el siguiente código en tu tienda:",
+    "step3Callout": "El widget es completamente responsive y se adapta al estilo de tu tienda a través de las opciones de configuración.",
+    "verifyTitle": "Verificar la instalación",
+    "verifyDesc": "Abre las herramientas de desarrollador del navegador (F12). Si la instalación es correcta, verás el mensaje <code>USize: initialized</code> en la consola."
+  },
+  "training": {
+    "title": "Datos de entrenamiento",
+    "lead": "El modelo se entrena con datos específicos de tu marca para que las predicciones sean precisas para tu tabla de tallas.",
+    "formatTitle": "Formato del archivo Excel",
+    "formatDesc": "El archivo debe tener las siguientes columnas (se aceptan variantes):",
+    "formatTable": {
+      "colCol": "Columna",
+      "colVariants": "Variantes aceptadas",
+      "colType": "Tipo",
+      "colRequired": "Requerida",
+      "typeNumber": "Número",
+      "typeSize": "S / M / L / XL"
+    },
+    "exampleTitle": "Ejemplo de datos",
+    "callout": "Puedes descargar la plantilla pre-rellenada con datos de ejemplo desde el <link>dashboard</link> en la sección \"Modelo IA\".",
+    "recsTitle": "Recomendaciones",
+    "recs": [
+      "Mínimo 20 filas; recomendado 50+",
+      "Distribuye las tallas de forma equilibrada",
+      "Usa datos reales de clientes si es posible",
+      "Puedes combinar tus datos con los datos base del modelo"
+    ]
+  },
+  "options": {
+    "title": "Opciones del widget",
+    "leadPre": "Personaliza el comportamiento y apariencia del widget mediante el objeto de configuración pasado a",
+    "table": {
+      "colOption": "Opción",
+      "colType": "Tipo",
+      "colRequired": "Requerida",
+      "colDesc": "Descripción",
+      "descApiKey": "Tu API key única del dashboard.",
+      "descContainer": "Selector CSS del contenedor del widget.",
+      "descBrandColor": "Color principal en formato hex. Default: #53a0f8.",
+      "descButtonText": "Texto del botón. Default: \"¿Cuál es mi talla?\".",
+      "descPosition": "after-add-to-cart | before-add-to-cart | floating",
+      "descLocale": "Idioma: es (default) | en | pt."
+    },
+    "exampleTitle": "Ejemplo con todas las opciones"
+  },
+  "api": {
+    "title": "Referencia de la API",
+    "leadPre": "Documenta todos los métodos públicos que expone el objeto",
+    "leadPost": "en el contexto del navegador.",
+    "initDesc": "Inicializa el widget. Debe llamarse una sola vez por página.",
+    "predictDesc": "Ejecuta una predicción manualmente. Retorna una promesa con el resultado.",
+    "onDesc": "Suscribe a eventos del widget.",
+    "onCode": "USize.on(\"predict\", ({ size, confidence }) => {\n  console.log(\"Talla predicha:\", size);\n  // Aquí puedes integrar con tu analytics\n  gtag(\"event\", \"usize_predict\", { size });\n});\n\n// Eventos disponibles:\n// \"predict\"  — cuando se realiza una predicción\n// \"open\"     — cuando el modal se abre\n// \"close\"    — cuando el modal se cierra",
+    "callout": "Los eventos sólo están disponibles en los planes Pro y Enterprise."
+  },
+  "integration": {
+    "title": "Integración por plataforma",
+    "lead": "Instrucciones específicas para las plataformas de e-commerce más populares.",
+    "shopifyTitle": "Shopify",
+    "shopifyDesc": "Edita el archivo <code>theme.liquid</code> de tu tema y añade el snippet antes del cierre de <code>&lt;/body&gt;</code>. Para añadir el widget en la página de producto, edita <code>product.liquid</code>.",
+    "wooTitle": "WooCommerce",
+    "wooDescPre": "Añade el snippet a través de",
+    "wooDescBold": "Apariencia → Editor de temas",
+    "wooDescPost": "o usando un plugin como Code Snippets.",
+    "htmlTitle": "HTML estático",
+    "htmlDesc": "Añade el snippet directamente en tu archivo HTML:"
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "lead": "Respuestas a las dudas más comunes sobre USize.",
+    "q1": "¿El widget funciona sin conexión a internet?",
+    "a1": "Una vez que el modelo está entrenado y guardado en el localStorage del navegador, las predicciones funcionan completamente offline.",
+    "q2": "¿Qué navegadores son compatibles?",
+    "a2": "USize es compatible con Chrome 80+, Firefox 78+, Safari 14+, Edge 80+. No es compatible con Internet Explorer.",
+    "q3": "¿Puedo personalizar los tamaños más allá de S/M/L/XL?",
+    "a3": "Actualmente el modelo predice 4 clases estándar. El soporte para tallas numéricas (28, 30, 32...) o tallas extendidas (XS, XXL) está planificado para una versión futura.",
+    "q4": "¿Cómo sé si mi modelo tiene buena precisión?",
+    "a4": "En el dashboard puedes ver la métrica de accuracy del último entrenamiento. Un valor por encima del 90 % indica un buen modelo. Si es inferior, añade más datos de entrenamiento.",
+    "q5": "¿Mis datos de clientes están seguros?",
+    "a5": "Sí. El modelo se entrena y ejecuta en el navegador del usuario. No se envían medidas personales a ningún servidor externo. Tu API key solo se usa para validar tu suscripción.",
+    "callout": "¿Tienes una pregunta que no está aquí? Escríbenos a <mail>soporte@usize.app</mail>."
+  }
+}

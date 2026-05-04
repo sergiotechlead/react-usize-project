@@ -1,0 +1,56 @@
+{
+  "hero": {
+    "eyebrow": "Fashion Tech · Machine Learning · SaaS",
+    "title": "Your AI-powered size widget,",
+    "titleAccent": "ready in 5 minutes",
+    "desc": "Train a model with your brand's data, embed two lines of code, and reduce size-related returns by up to <1>40%</1>.",
+    "demoBtn": "See live demo",
+    "initBtn": "Initializing AI...",
+    "registerBtn": "Create free account",
+    "hintReady": "Pre-trained model loaded — no registration needed",
+    "hintLoading": "Training base model in the background…",
+    "widgetBtn": "What's my size?"
+  },
+  "steps": {
+    "label": "Process",
+    "title": "Three steps to integrate AI",
+    "items": [
+      { "title": "Upload your data", "desc": "Download the Excel template, fill it with your brand's measurements and sizes, and upload it to the dashboard." },
+      { "title": "Train your model", "desc": "Our AI learns your brand's patterns in seconds, directly in the browser. No external servers." },
+      { "title": "Integrate and done", "desc": "Copy two lines of code into your store. Your customers will find their perfect size in real time." }
+    ]
+  },
+  "features": {
+    "label": "Features",
+    "title": "Everything you need",
+    "items": [
+      { "title": "Accurate prediction", "desc": "Neural network with 4 input variables and over 94% accuracy on test data." },
+      { "title": "Private data", "desc": "The model trains in the user's browser. No personal data ever leaves their device." },
+      { "title": "Responsive", "desc": "The widget adapts to any store: Shopify, WooCommerce, Vtex, or plain HTML." },
+      { "title": "Real-time analytics", "desc": "Monitor how many predictions are made, size distribution, and trends by period." },
+      { "title": "Customizable", "desc": "Adjust widget colors, text, and styles to match your brand perfectly." },
+      { "title": "Easy integration", "desc": "One script tag and one div. No frameworks required. Works on any stack." }
+    ]
+  },
+  "embed": {
+    "label": "Integration",
+    "title": "Two lines of code",
+    "desc": "Paste this snippet into your store. Works with any e-commerce platform or static HTML.",
+    "apiKeyBtn": "Get my API key"
+  },
+  "pricing": {
+    "label": "Pricing",
+    "title": "Simple and transparent",
+    "morePlans": "See full plan comparison",
+    "popular": "Most popular",
+    "plans": [
+      { "price": "Free", "limit": "500 predictions/month", "features": ["1 model", "Standard widget", "Email support"], "cta": "Start for free" },
+      { "price": "$29", "period": "/mo", "limit": "10,000 predictions/month", "features": ["3 models", "Custom widget", "Advanced analytics", "Priority support"], "cta": "Try Pro" },
+      { "price": "Custom", "limit": "Unlimited predictions", "features": ["Unlimited models", "White-label branding", "SLA 99.9%", "Dedicated manager"], "cta": "Contact sales" }
+    ]
+  },
+  "modal": {
+    "title": "Size Predictor",
+    "closeLabel": "Close"
+  }
+}

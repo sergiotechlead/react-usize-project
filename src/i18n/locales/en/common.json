@@ -1,0 +1,36 @@
+{
+  "nav": {
+    "howItWorks": "How it works",
+    "docs": "Documentation",
+    "pricing": "Pricing",
+    "login": "Sign in",
+    "register": "Start for free",
+    "dashboard": "Dashboard",
+    "toggleMenu": "Menu"
+  },
+  "footer": {
+    "tagline": "The AI-powered size prediction widget for your fashion store.",
+    "builtWith": "Built with React & TensorFlow.js",
+    "groups": {
+      "product": "Product",
+      "resources": "Resources",
+      "account": "Account"
+    },
+    "links": {
+      "howItWorks": "How it works",
+      "features": "Features",
+      "pricing": "Pricing",
+      "docs": "Documentation",
+      "apiRef": "API Reference",
+      "faq": "FAQ",
+      "login": "Sign in",
+      "register": "Sign up",
+      "contact": "Contact"
+    }
+  },
+  "lang": {
+    "select": "Language",
+    "es": "Español",
+    "en": "English"
+  }
+}

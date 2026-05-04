@@ -1,11 +1,13 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { useTranslation } from 'react-i18next';
 import './Footer.css';
 
 export default function Footer() {
   const navigate  = useNavigate();
   const location  = useLocation();
+  const { t } = useTranslation('common');
 
   function scrollToSection(id) {
     if (location.pathname === '/') {
@@ -29,9 +31,7 @@ export default function Footer() {
             </div>
             <span className="footer-brand-name">USize</span>
           </Link>
-          <p className="footer-tagline">
-            El widget de predicción de tallas con IA para tu tienda de moda.
-          </p>
+          <p className="footer-tagline">{t('footer.tagline')}</p>
           <a
             href="https://github.com/Serbeld/"
             className="footer-social"
@@ -43,35 +43,35 @@ export default function Footer() {
         </div>
 
         <div className="footer-links-group">
-          <h4>Producto</h4>
+          <h4>{t('footer.groups.product')}</h4>
           <ul>
-            <li><button className="footer-link-btn" onClick={() => scrollToSection('como-funciona')}>Cómo funciona</button></li>
-            <li><button className="footer-link-btn" onClick={() => scrollToSection('funcionalidades')}>Funcionalidades</button></li>
-            <li><Link to="/pricing">Precios</Link></li>
+            <li><button className="footer-link-btn" onClick={() => scrollToSection('como-funciona')}>{t('footer.links.howItWorks')}</button></li>
+            <li><button className="footer-link-btn" onClick={() => scrollToSection('funcionalidades')}>{t('footer.links.features')}</button></li>
+            <li><Link to="/pricing">{t('footer.links.pricing')}</Link></li>
           </ul>
         </div>
 
         <div className="footer-links-group">
-          <h4>Recursos</h4>
+          <h4>{t('footer.groups.resources')}</h4>
           <ul>
-            <li><Link to="/docs">Documentación</Link></li>
-            <li><button className="footer-link-btn" onClick={() => goToDocsSection('api')}>Referencia API</button></li>
-            <li><button className="footer-link-btn" onClick={() => goToDocsSection('faq')}>FAQ</button></li>
+            <li><Link to="/docs">{t('footer.links.docs')}</Link></li>
+            <li><button className="footer-link-btn" onClick={() => goToDocsSection('api')}>{t('footer.links.apiRef')}</button></li>
+            <li><button className="footer-link-btn" onClick={() => goToDocsSection('faq')}>{t('footer.links.faq')}</button></li>
           </ul>
         </div>
 
         <div className="footer-links-group">
-          <h4>Cuenta</h4>
+          <h4>{t('footer.groups.account')}</h4>
           <ul>
-            <li><Link to="/login">Iniciar sesión</Link></li>
-            <li><Link to="/register">Registrarse</Link></li>
-            <li><Link to="/contact">Contacto</Link></li>
+            <li><Link to="/login">{t('footer.links.login')}</Link></li>
+            <li><Link to="/register">{t('footer.links.register')}</Link></li>
+            <li><Link to="/contact">{t('footer.links.contact')}</Link></li>
           </ul>
         </div>
       </div>
 
       <div className="footer-bottom">
-        <p>© {new Date().getFullYear()} USize · Construido con React &amp; TensorFlow.js</p>
+        <p>© {new Date().getFullYear()} USize · {t('footer.builtWith')}</p>
       </div>
     </footer>
   );

@@ -1,0 +1,21 @@
+{
+  "subtitle": "Enter your measurements to get your recommended size.",
+  "back": "Back width",
+  "height": "Height",
+  "weight": "Weight",
+  "age": "Age",
+  "ageUnit": "yrs",
+  "predict": "Predict my size",
+  "predicting": "Predicting...",
+  "checkingModel": "Checking model...",
+  "initializingAI": "Initializing AI...",
+  "resultLabel": "Your suggested size is",
+  "tryAgain": "Try again",
+  "errorModel": "Error loading the model. Make sure it has been trained.",
+  "initializing": "Training base model, this takes a few seconds…",
+  "meter": {
+    "tight": "Tight",
+    "perfect": "Perfect fit",
+    "loose": "Loose"
+  }
+}

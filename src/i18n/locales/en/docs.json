@@ -1,0 +1,134 @@
+{
+  "sidebar": "Documentation",
+  "mobileMenu": "Documentation menu",
+  "copy": "Copy",
+  "copied": "Copied",
+  "sections": {
+    "intro": "Introduction",
+    "quickstart": "Quick start",
+    "training": "Training data",
+    "options": "Widget options",
+    "api": "API reference",
+    "integration": "Platforms",
+    "faq": "FAQ"
+  },
+  "intro": {
+    "title": "Introduction to USize",
+    "lead": "USize is a SaaS that allows any fashion store to add an intelligent size prediction widget trained on their brand's specific data.",
+    "howTitle": "How does it work?",
+    "howDesc": "The architecture is based on TensorFlow.js, which allows the neural network model to be trained and run directly in the user's browser. This guarantees maximum privacy since no personal data ever leaves the device.",
+    "steps": [
+      "The merchant uploads their size data through the dashboard.",
+      "The model trains in the browser in seconds.",
+      "A unique integration snippet is generated with your API key.",
+      "Your store visitors get personalized size predictions."
+    ],
+    "archTitle": "Model architecture",
+    "archDesc": "The neural network accepts 4 input variables:",
+    "archTable": {
+      "colVar": "Variable",
+      "colUnit": "Unit",
+      "colRange": "Typical range",
+      "colDesc": "Description",
+      "rows": [
+        { "var": "back",   "unit": "cm",  "range": "38–56",   "desc": "Back width" },
+        { "var": "height", "unit": "cm",  "range": "155–190", "desc": "Total height" },
+        { "var": "weight", "unit": "kg",  "range": "50–100",  "desc": "Body weight" },
+        { "var": "age",    "unit": "yrs", "range": "18–65",   "desc": "Person's age" }
+      ]
+    },
+    "archOutputPre": "The output is a 4-class classification:",
+    "callout": "The network architecture is: <strong>4 → 100 → 1000 → 100 → 4 (softmax)</strong>. Trained with Adam optimizer and categorical crossentropy."
+  },
+  "quickstart": {
+    "title": "Quick start",
+    "lead": "Integrate the size prediction widget in under 5 minutes.",
+    "step1Title": "Step 1 — Create your account",
+    "step1": "<link>Sign up</link> to get your personal API key. The Starter plan is completely free.",
+    "step2Title": "Step 2 — Train your model",
+    "step2": "Download the Excel template from your dashboard, fill it with your brand's measurements and sizes, and upload it to train the model.",
+    "step2Callout": "You need at least <strong>20 rows of data</strong> to get reliable predictions. We recommend at least 10 samples per size.",
+    "step3Title": "Step 3 — Paste the snippet",
+    "step3": "Add the following code to your store:",
+    "step3Callout": "The widget is fully responsive and adapts to your store's style through the configuration options.",
+    "verifyTitle": "Verify the installation",
+    "verifyDesc": "Open your browser's developer tools (F12). If the installation is correct, you'll see the <code>USize: initialized</code> message in the console."
+  },
+  "training": {
+    "title": "Training data",
+    "lead": "The model is trained with your brand's specific data so that predictions are accurate for your size chart.",
+    "formatTitle": "Excel file format",
+    "formatDesc": "The file must have the following columns (variants are accepted):",
+    "formatTable": {
+      "colCol": "Column",
+      "colVariants": "Accepted variants",
+      "colType": "Type",
+      "colRequired": "Required",
+      "typeNumber": "Number",
+      "typeSize": "S / M / L / XL"
+    },
+    "exampleTitle": "Data example",
+    "callout": "You can download the pre-filled template with sample data from the <link>dashboard</link> in the \"AI Model\" section.",
+    "recsTitle": "Recommendations",
+    "recs": [
+      "Minimum 20 rows; 50+ recommended",
+      "Distribute sizes evenly",
+      "Use real customer data if possible",
+      "You can combine your data with the model's base data"
+    ]
+  },
+  "options": {
+    "title": "Widget options",
+    "leadPre": "Customize the behavior and appearance of the widget through the configuration object passed to",
+    "table": {
+      "colOption": "Option",
+      "colType": "Type",
+      "colRequired": "Required",
+      "colDesc": "Description",
+      "descApiKey": "Your unique API key from the dashboard.",
+      "descContainer": "CSS selector of the widget container.",
+      "descBrandColor": "Primary color in hex format. Default: #53a0f8.",
+      "descButtonText": "Button text. Default: \"What's my size?\".",
+      "descPosition": "after-add-to-cart | before-add-to-cart | floating",
+      "descLocale": "Language: es | en (default) | pt."
+    },
+    "exampleTitle": "Example with all options"
+  },
+  "api": {
+    "title": "API reference",
+    "leadPre": "Documents all public methods exposed by the",
+    "leadPost": "object in the browser context.",
+    "initDesc": "Initializes the widget. Must be called once per page.",
+    "predictDesc": "Runs a prediction manually. Returns a promise with the result.",
+    "onDesc": "Subscribes to widget events.",
+    "onCode": "USize.on(\"predict\", ({ size, confidence }) => {\n  console.log(\"Predicted size:\", size);\n  // Here you can integrate with your analytics\n  gtag(\"event\", \"usize_predict\", { size });\n});\n\n// Available events:\n// \"predict\"  — when a prediction is made\n// \"open\"     — when the modal opens\n// \"close\"    — when the modal closes",
+    "callout": "Events are only available on Pro and Enterprise plans."
+  },
+  "integration": {
+    "title": "Platform integration",
+    "lead": "Specific instructions for the most popular e-commerce platforms.",
+    "shopifyTitle": "Shopify",
+    "shopifyDesc": "Edit the <code>theme.liquid</code> file of your theme and add the snippet before the closing <code>&lt;/body&gt;</code> tag. To add the widget on the product page, edit <code>product.liquid</code>.",
+    "wooTitle": "WooCommerce",
+    "wooDescPre": "Add the snippet through",
+    "wooDescBold": "Appearance → Theme Editor",
+    "wooDescPost": "or using a plugin like Code Snippets.",
+    "htmlTitle": "Static HTML",
+    "htmlDesc": "Add the snippet directly to your HTML file:"
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "lead": "Answers to the most common questions about USize.",
+    "q1": "Does the widget work offline?",
+    "a1": "Once the model is trained and saved in the browser's localStorage, predictions work completely offline.",
+    "q2": "Which browsers are supported?",
+    "a2": "USize supports Chrome 80+, Firefox 78+, Safari 14+, Edge 80+. Internet Explorer is not supported.",
+    "q3": "Can I customize sizes beyond S/M/L/XL?",
+    "a3": "Currently the model predicts 4 standard classes. Support for numeric sizes (28, 30, 32...) or extended sizes (XS, XXL) is planned for a future version.",
+    "q4": "How do I know if my model has good accuracy?",
+    "a4": "In the dashboard you can see the accuracy metric from the last training. A value above 90% indicates a good model. If it's lower, add more training data.",
+    "q5": "Is my customer data secure?",
+    "a5": "Yes. The model trains and runs in the user's browser. No personal measurements are sent to any external server. Your API key is only used to validate your subscription.",
+    "callout": "Have a question that's not here? Write to us at <mail>support@usize.app</mail>."
+  }
+}

@@ -4,6 +4,7 @@ import App from './App/App';
 import reportWebVitals from './index/reportWebVitals';
 import { AuthProvider } from './context/AuthContext';
 import { ModelProvider } from './context/ModelContext';
+import './i18n';
 import './App/files/styles-product.css';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

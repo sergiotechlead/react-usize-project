@@ -22,7 +22,6 @@ export default function Navbar({ activePage }) {
 
         <ul className={`navbar-links${open ? ' is-open' : ''}`}>
           <li><a href="/#como-funciona" onClick={() => setOpen(false)}>Cómo funciona</a></li>
-          <li><a href="/#funcionalidades" onClick={() => setOpen(false)}>Funcionalidades</a></li>
           <li>
             <Link to="/docs" className={activePage === 'docs' ? 'is-active' : ''} onClick={() => setOpen(false)}>
               Documentación

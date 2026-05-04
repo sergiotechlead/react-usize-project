@@ -323,9 +323,8 @@ function IntegrationSection({ user }) {
 }
 
 function CustomizationSection() {
-  const [color, setColor]       = useState('#53a0f8');
-  const [btnText, setBtnText]   = useState('¿Cuál es mi talla?');
-  const [position, setPosition] = useState('after-add-to-cart');
+  const [color, setColor]     = useState('#53a0f8');
+  const [btnText, setBtnText] = useState('¿Cuál es mi talla?');
 
   return (
     <div className="section-content">
@@ -345,16 +344,6 @@ function CustomizationSection() {
             <label>Texto del botón</label>
             <input type="text" className="text-input" value={btnText}
               onChange={e => setBtnText(e.target.value)} maxLength={60} />
-          </div>
-
-          <div className="custom-field">
-            <label>Posición en la página</label>
-            <select className="select-input" value={position} onChange={e => setPosition(e.target.value)}>
-              <option value="after-add-to-cart">Después del botón "Agregar al carrito"</option>
-              <option value="before-add-to-cart">Antes del botón "Agregar al carrito"</option>
-              <option value="size-guide">Junto a la guía de tallas</option>
-              <option value="floating">Botón flotante</option>
-            </select>
           </div>
 
           <button className="btn-primary-dash" onClick={() => {}}>

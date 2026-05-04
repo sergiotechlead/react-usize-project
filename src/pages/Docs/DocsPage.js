@@ -142,7 +142,7 @@ export default function DocsPage() {
                   </tbody>
                 </table>
               </div>
-              <p>{t('intro.archOutputPre')} <code>S</code>, <code>M</code>, <code>L</code>, <code>XL</code>.</p>
+              <p>{t('intro.archOutputPre')} <code>XS</code>, <code>S</code>, <code>M</code>, <code>L</code>, <code>XL</code>, <code>XXL</code>.</p>
               <Callout type="info">
                 <Trans i18nKey="docs:intro.callout" components={{ strong: <strong /> }} />
               </Callout>
@@ -219,10 +219,12 @@ export default function DocsPage() {
 
               <h2>{t('training.exampleTitle')}</h2>
               <CodeBlock lang="CSV" code={`espalda_cm,altura_cm,peso_kg,edad_años,talla
-41,157,56,22,S
-47,174,65,28,M
-48,170,72,35,L
-49,183,80,42,XL`} />
+37,155,46,23,XS
+41,163,56,25,S
+45,168,64,31,M
+48,174,78,32,L
+52,178,88,35,XL
+58,183,108,41,XXL`} />
 
               <Callout type="info">
                 <Trans i18nKey="docs:training.callout" components={{ link: <Link to="/dashboard" /> }} />

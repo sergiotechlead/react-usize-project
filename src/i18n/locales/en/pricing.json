@@ -16,7 +16,7 @@
       "limit": "500 predictions/month",
       "desc": "Ideal for small stores that want to try the technology.",
       "cta": "Start for free",
-      "features": ["1 size model", "Standard widget", "Basic predictions (S/M/L/XL)", "Analytics dashboard", "Email support"]
+      "features": ["1 size model", "Standard widget", "Sizes XS · S · M · L · XL · XXL", "Analytics dashboard", "Email support"]
     },
     {
       "name": "Pro",

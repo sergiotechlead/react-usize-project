@@ -37,8 +37,8 @@
         { "var": "age",    "unit": "yrs", "range": "18–65",   "desc": "Person's age" }
       ]
     },
-    "archOutputPre": "The output is a 4-class classification:",
-    "callout": "The network architecture is: <strong>4 → 100 → 1000 → 100 → 4 (softmax)</strong>. Trained with Adam optimizer and categorical crossentropy."
+    "archOutputPre": "The output is a 6-class classification:",
+    "callout": "The network architecture is: <strong>4 → 100 → 1000 → 100 → 6 (softmax)</strong>. Trained with Adam optimizer and categorical crossentropy."
   },
   "quickstart": {
     "title": "Quick start",
@@ -65,7 +65,7 @@
       "colType": "Type",
       "colRequired": "Required",
       "typeNumber": "Number",
-      "typeSize": "S / M / L / XL"
+      "typeSize": "XS / S / M / L / XL / XXL"
     },
     "exampleTitle": "Data example",
     "callout": "You can download the pre-filled template with sample data from the <link>dashboard</link> in the \"AI Model\" section.",
@@ -123,8 +123,8 @@
     "a1": "Once the model is trained and saved in the browser's localStorage, predictions work completely offline.",
     "q2": "Which browsers are supported?",
     "a2": "USize supports Chrome 80+, Firefox 78+, Safari 14+, Edge 80+. Internet Explorer is not supported.",
-    "q3": "Can I customize sizes beyond S/M/L/XL?",
-    "a3": "Currently the model predicts 4 standard classes. Support for numeric sizes (28, 30, 32...) or extended sizes (XS, XXL) is planned for a future version.",
+    "q3": "Can I use sizes beyond XS–XXL?",
+    "a3": "The model natively supports XS, S, M, L, XL and XXL. Support for numeric sizes (28, 30, 32…) or 3XL and above is planned for a future version.",
     "q4": "How do I know if my model has good accuracy?",
     "a4": "In the dashboard you can see the accuracy metric from the last training. A value above 90% indicates a good model. If it's lower, add more training data.",
     "q5": "Is my customer data secure?",

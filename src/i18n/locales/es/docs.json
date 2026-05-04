@@ -37,8 +37,8 @@
         { "var": "edad",    "unit": "años", "range": "18–65",   "desc": "Edad de la persona" }
       ]
     },
-    "archOutputPre": "La salida es una clasificación de 4 clases:",
-    "callout": "La arquitectura de la red es: <strong>4 → 100 → 1000 → 100 → 4 (softmax)</strong>. Entrenada con Adam optimizer y categorical crossentropy."
+    "archOutputPre": "La salida es una clasificación de 6 clases:",
+    "callout": "La arquitectura de la red es: <strong>4 → 100 → 1000 → 100 → 6 (softmax)</strong>. Entrenada con Adam optimizer y categorical crossentropy."
   },
   "quickstart": {
     "title": "Instalación rápida",
@@ -65,7 +65,7 @@
       "colType": "Tipo",
       "colRequired": "Requerida",
       "typeNumber": "Número",
-      "typeSize": "S / M / L / XL"
+      "typeSize": "XS / S / M / L / XL / XXL"
     },
     "exampleTitle": "Ejemplo de datos",
     "callout": "Puedes descargar la plantilla pre-rellenada con datos de ejemplo desde el <link>dashboard</link> en la sección \"Modelo IA\".",
@@ -123,8 +123,8 @@
     "a1": "Una vez que el modelo está entrenado y guardado en el localStorage del navegador, las predicciones funcionan completamente offline.",
     "q2": "¿Qué navegadores son compatibles?",
     "a2": "USize es compatible con Chrome 80+, Firefox 78+, Safari 14+, Edge 80+. No es compatible con Internet Explorer.",
-    "q3": "¿Puedo personalizar los tamaños más allá de S/M/L/XL?",
-    "a3": "Actualmente el modelo predice 4 clases estándar. El soporte para tallas numéricas (28, 30, 32...) o tallas extendidas (XS, XXL) está planificado para una versión futura.",
+    "q3": "¿Puedo personalizar los tamaños más allá de XS–XXL?",
+    "a3": "El modelo admite de forma nativa XS, S, M, L, XL y XXL. El soporte para tallas numéricas (28, 30, 32…) o tallas 3XL y superiores está planificado para una versión futura.",
     "q4": "¿Cómo sé si mi modelo tiene buena precisión?",
     "a4": "En el dashboard puedes ver la métrica de accuracy del último entrenamiento. Un valor por encima del 90 % indica un buen modelo. Si es inferior, añade más datos de entrenamiento.",
     "q5": "¿Mis datos de clientes están seguros?",

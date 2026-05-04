@@ -12,23 +12,25 @@ import * as XLSX from 'xlsx';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useModel } from '../../context/ModelContext';
-import { DEFAULT_INPUT_DATA, DEFAULT_LABELS, trainModel, parseExcelRows } from '../../ml/modelConfig';
+import { DEFAULT_INPUT_DATA, DEFAULT_LABELS, SIZE_LABELS, trainModel, parseExcelRows } from '../../ml/modelConfig';
 import './DashboardPage.css';
 
 const SIZE_DIST = [
-  { size: 'S',  pct: 18, color: 'var(--color-accent)' },
-  { size: 'M',  pct: 35, color: '#7ab8fa' },
-  { size: 'L',  pct: 29, color: '#5db35d' },
-  { size: 'XL', pct: 18, color: '#ef7b7b' },
+  { size: 'XS',  pct: 5,  color: '#c084fc' },
+  { size: 'S',   pct: 15, color: 'var(--color-accent)' },
+  { size: 'M',   pct: 30, color: '#7ab8fa' },
+  { size: 'L',   pct: 25, color: '#5db35d' },
+  { size: 'XL',  pct: 17, color: '#ef7b7b' },
+  { size: 'XXL', pct: 8,  color: '#f59e0b' },
 ];
 
 const NAV_ICONS = [faGauge, faBrain, faCode, faPalette];
 const NAV_IDS   = ['overview', 'model', 'integration', 'customization'];
 
 function downloadTemplate() {
-  const rows = DEFAULT_INPUT_DATA.slice(0, 8).map((r, i) => ({
+  const rows = DEFAULT_INPUT_DATA.slice(0, 12).map((r, i) => ({
     espalda_cm: r[0], altura_cm: r[1], peso_kg: r[2], 'edad_años': r[3],
-    talla: ['S','M','L','XL'][i % 4],
+    talla: SIZE_LABELS[i % SIZE_LABELS.length],
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
   ws['!cols'] = [{ wch: 12 }, { wch: 12 }, { wch: 10 }, { wch: 11 }, { wch: 8 }];
@@ -178,7 +180,7 @@ function ModelSection({ user }) {
             <div><dt>{t('model.metaPlan')}</dt><dd>{user.plan}</dd></div>
             <div><dt>{t('model.metaBrand')}</dt><dd>{user.brand}</dd></div>
             <div><dt>{t('model.metaInputs')}</dt><dd>espalda · altura · peso · edad</dd></div>
-            <div><dt>{t('model.metaArch')}</dt><dd>4 → 100 → 1000 → 100 → 4</dd></div>
+            <div><dt>{t('model.metaArch')}</dt><dd>{`4 → 100 → 1000 → 100 → ${SIZE_LABELS.length}`}</dd></div>
           </dl>
         </div>
 

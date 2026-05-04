@@ -1,6 +1,4 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGithub } from '@fortawesome/free-brands-svg-icons';
 import { useTranslation } from 'react-i18next';
 import './Footer.css';
 
@@ -32,14 +30,6 @@ export default function Footer() {
             <span className="footer-brand-name">USize</span>
           </Link>
           <p className="footer-tagline">{t('footer.tagline')}</p>
-          <a
-            href="https://github.com/Serbeld/"
-            className="footer-social"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FontAwesomeIcon icon={faGithub} />
-          </a>
         </div>
 
         <div className="footer-links-group">

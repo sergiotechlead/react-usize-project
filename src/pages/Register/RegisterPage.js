@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -10,7 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 import './RegisterPage.css';
 
 export default function RegisterPage() {
-  const { login, user } = useAuth();
+  const { register, user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation('auth');
 
@@ -29,7 +29,9 @@ export default function RegisterPage() {
   const [error,    setError]    = useState('');
   const [loading,  setLoading]  = useState(false);
 
-  if (user) { navigate('/dashboard', { replace: true }); return null; }
+  useEffect(() => {
+    if (user) navigate('/dashboard', { replace: true });
+  }, [user, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -38,8 +40,7 @@ export default function RegisterPage() {
     setError('');
     setLoading(true);
     try {
-      await new Promise(r => setTimeout(r, 700));
-      login(email, password);
+      await register(name, email, password, brand, plan);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.message);

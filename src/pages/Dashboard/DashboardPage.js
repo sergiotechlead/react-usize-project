@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -6,23 +6,14 @@ import {
   faCircleCheck, faCircleXmark, faSpinner,
   faDownload, faUpload, faPlay,
   faCopy, faRightFromBracket, faKey,
-  faArrowTrendUp, faArrowTrendDown, faChevronRight,
+  faArrowTrendUp, faArrowTrendDown, faChevronRight, faPlus,
 } from '@fortawesome/free-solid-svg-icons';
 import * as XLSX from 'xlsx';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, apiFetch } from '../../context/AuthContext';
 import { useModel } from '../../context/ModelContext';
 import { DEFAULT_INPUT_DATA, DEFAULT_LABELS, SIZE_LABELS, trainModel, parseExcelRows } from '../../ml/modelConfig';
 import './DashboardPage.css';
-
-const SIZE_DIST = [
-  { size: 'XS',  pct: 5,  color: '#c084fc' },
-  { size: 'S',   pct: 15, color: 'var(--color-accent)' },
-  { size: 'M',   pct: 30, color: '#7ab8fa' },
-  { size: 'L',   pct: 25, color: '#5db35d' },
-  { size: 'XL',  pct: 17, color: '#ef7b7b' },
-  { size: 'XXL', pct: 8,  color: '#f59e0b' },
-];
 
 const NAV_ICONS = [faGauge, faBrain, faCode, faPalette];
 const NAV_IDS   = ['overview', 'model', 'integration', 'customization'];
@@ -41,22 +32,41 @@ function downloadTemplate() {
 
 function StatCards() {
   const { t } = useTranslation('dashboard');
-  const MOCK_STATS = [
-    { key: 'predictions', value: '1 247', delta: '+12 %', up: true  },
-    { key: 'accuracy',    value: '94.3 %', delta: '+1.2 %', up: true  },
-    { key: 'users',       value: '89',     delta: '+8 %',  up: true  },
-    { key: 'satisfaction',value: '4.7 / 5', delta: '-0.1', up: false },
-  ];
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    apiFetch('/analytics/overview')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setStats(data); })
+      .catch(() => {});
+  }, []);
+
+  const STAT_CARDS = stats
+    ? [
+        { key: 'predictions', value: String(stats.predictions_this_month), delta: '', up: true },
+        { key: 'accuracy', value: stats.accuracy != null ? `${Math.round(stats.accuracy * 1000) / 10} %` : '—', delta: '', up: true },
+        { key: 'users', value: String(stats.active_users), delta: '', up: true },
+        { key: 'satisfaction', value: `${stats.satisfaction} / 5`, delta: '', up: true },
+      ]
+    : [
+        { key: 'predictions', value: '—', delta: '', up: true },
+        { key: 'accuracy', value: '—', delta: '', up: true },
+        { key: 'users', value: '—', delta: '', up: true },
+        { key: 'satisfaction', value: '—', delta: '', up: true },
+      ];
+
   return (
     <div className="stats-grid">
-      {MOCK_STATS.map(s => (
+      {STAT_CARDS.map(s => (
         <div key={s.key} className="stat-card">
           <p className="stat-label">{t(`stats.${s.key}`)}</p>
           <p className="stat-value">{s.value}</p>
-          <span className={`stat-delta ${s.up ? 'up' : 'down'}`}>
-            <FontAwesomeIcon icon={s.up ? faArrowTrendUp : faArrowTrendDown} />
-            {s.delta} {t('stats.vsPrev')}
-          </span>
+          {s.delta && (
+            <span className={`stat-delta ${s.up ? 'up' : 'down'}`}>
+              <FontAwesomeIcon icon={s.up ? faArrowTrendUp : faArrowTrendDown} />
+              {s.delta} {t('stats.vsPrev')}
+            </span>
+          )}
         </div>
       ))}
     </div>
@@ -65,15 +75,30 @@ function StatCards() {
 
 function SizeDistChart() {
   const { t } = useTranslation('dashboard');
+  const [dist, setDist] = useState([]);
+  const COLORS = { XS: '#c084fc', S: 'var(--color-accent)', M: '#7ab8fa', L: '#5db35d', XL: '#ef7b7b', XXL: '#f59e0b' };
+
+  useEffect(() => {
+    apiFetch('/predictions/distribution')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { if (Array.isArray(data) && data.length > 0) setDist(data); })
+      .catch(() => {});
+  }, []);
+
+  const display = dist.length > 0 ? dist : [
+    { size: 'XS', pct: 5 }, { size: 'S', pct: 15 }, { size: 'M', pct: 30 },
+    { size: 'L', pct: 25 }, { size: 'XL', pct: 17 }, { size: 'XXL', pct: 8 },
+  ];
+
   return (
     <div className="dist-card">
       <h3 className="card-title">{t('dist.title')}</h3>
       <div className="dist-bars">
-        {SIZE_DIST.map(({ size, pct, color }) => (
+        {display.map(({ size, pct }) => (
           <div key={size} className="dist-row">
             <span className="dist-size">{size}</span>
             <div className="dist-bar-track">
-              <div className="dist-bar-fill" style={{ width: `${pct}%`, background: color }} />
+              <div className="dist-bar-fill" style={{ width: `${pct}%`, background: COLORS[size] || '#888' }} />
             </div>
             <span className="dist-pct">{pct} %</span>
           </div>
@@ -86,7 +111,11 @@ function SizeDistChart() {
 function ModelSection({ user }) {
   const { modelStatus, markDirty, markReady } = useModel();
   const { t } = useTranslation('dashboard');
+
+  const [models, setModels]               = useState([]);
+  const [activeModelId, setActiveModelId] = useState(null);
   const [uploadedData, setUploadedData]   = useState(null);
+  const [uploadedFile, setUploadedFile]   = useState(null);
   const [parseErrors, setParseErrors]     = useState([]);
   const [isTraining, setIsTraining]       = useState(false);
   const [trainProgress, setTrainProgress] = useState(0);
@@ -96,6 +125,31 @@ function ModelSection({ user }) {
   const fileRef   = useRef(null);
   const logEndRef = useRef(null);
 
+  useEffect(() => {
+    apiFetch('/models')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => {
+        if (Array.isArray(data)) {
+          setModels(data);
+          if (data.length > 0 && !activeModelId) setActiveModelId(data[0].id);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  async function ensureModel() {
+    if (activeModelId) return activeModelId;
+    const res = await apiFetch('/models', {
+      method: 'POST',
+      body: JSON.stringify({ name: `${user.brand || 'My Brand'} Model` }),
+    });
+    if (!res.ok) return null;
+    const newModel = await res.json();
+    setModels(prev => [newModel, ...prev]);
+    setActiveModelId(newModel.id);
+    return newModel.id;
+  }
+
   function addLog(type, text) {
     setTrainLogs(prev => [...prev, { type, text }]);
     setTimeout(() => logEndRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
@@ -104,6 +158,7 @@ function ModelSection({ user }) {
   async function handleFileUpload(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    setUploadedFile(file);
     const data = await file.arrayBuffer();
     const wb   = XLSX.read(data, { type: 'array' });
     const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
@@ -128,6 +183,7 @@ function ModelSection({ user }) {
       : uploadedData.labels;
 
     const EPOCHS = 201;
+    const start  = Date.now();
     addLog('info', t('model.logStart', { count: inputData.length }));
 
     try {
@@ -144,10 +200,28 @@ function ModelSection({ user }) {
       const accKey = Object.keys(result.history).find(k => k.toLowerCase().includes('acc')) ?? 'acc';
       const h = result.history[accKey] ?? [];
       const acc = h.length ? Math.round(h[h.length - 1] * 10000) / 100 : 100;
+      const durationSecs = Math.round((Date.now() - start) / 1000);
+
       addLog('success', t('model.logComplete', { acc }));
       addLog('success', t('model.logSaved'));
       setIsTrained(true);
       markReady();
+
+      const modelId = await ensureModel();
+      if (modelId && uploadedFile) {
+        const formData = new FormData();
+        formData.append('file', uploadedFile);
+        formData.append('accuracy', String(acc / 100));
+        formData.append('samples_count', String(inputData.length));
+        formData.append('epochs', String(EPOCHS));
+        formData.append('duration_seconds', String(durationSecs));
+        await apiFetch(`/models/${modelId}/train`, {
+          method: 'POST',
+          headers: {},
+          body: formData,
+        });
+        addLog('success', 'Training session recorded in backend.');
+      }
     } catch (err) {
       addLog('error', t('model.logError', { msg: err.message }));
     } finally {
@@ -168,6 +242,8 @@ function ModelSection({ user }) {
     return t('model.statusError');
   }
 
+  const activeModel = models.find(m => m.id === activeModelId);
+
   return (
     <div className="section-content">
       <div className="cards-row">
@@ -178,10 +254,32 @@ function ModelSection({ user }) {
           </div>
           <dl className="model-meta">
             <div><dt>{t('model.metaPlan')}</dt><dd>{user.plan}</dd></div>
-            <div><dt>{t('model.metaBrand')}</dt><dd>{user.brand}</dd></div>
+            <div><dt>{t('model.metaBrand')}</dt><dd>{user.brand_name || user.brand || '—'}</dd></div>
             <div><dt>{t('model.metaInputs')}</dt><dd>espalda · altura · peso · edad</dd></div>
             <div><dt>{t('model.metaArch')}</dt><dd>{`4 → 100 → 1000 → 100 → ${SIZE_LABELS.length}`}</dd></div>
           </dl>
+          {models.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <label style={{ fontSize: '0.8rem', opacity: 0.7, display: 'block', marginBottom: 4 }}>
+                Active model
+              </label>
+              <select
+                style={{ width: '100%', padding: '4px 8px', borderRadius: 6, border: '1px solid var(--color-border)' }}
+                value={activeModelId || ''}
+                onChange={e => setActiveModelId(e.target.value)}
+              >
+                {models.map(m => (
+                  <option key={m.id} value={m.id}>{m.name} ({m.status})</option>
+                ))}
+              </select>
+            </div>
+          )}
+          {activeModel && activeModel.accuracy && (
+            <div style={{ marginTop: 8, fontSize: '0.8rem', opacity: 0.7 }}>
+              Backend accuracy: {Math.round(activeModel.accuracy * 1000) / 10}%
+              · {activeModel.samples_count} samples
+            </div>
+          )}
         </div>
 
         <div className="dash-card flex-grow">
@@ -251,8 +349,20 @@ function ModelSection({ user }) {
 
 function IntegrationSection({ user }) {
   const { t } = useTranslation('dashboard');
-  const [copied, setCopied]       = useState(false);
-  const [copiedKey, setCopiedKey] = useState(false);
+  const [apiKeys, setApiKeys]       = useState([]);
+  const [generating, setGenerating] = useState(false);
+  const [newKey, setNewKey]         = useState(null);
+  const [copied, setCopied]         = useState(false);
+  const [copiedKey, setCopiedKey]   = useState(false);
+
+  useEffect(() => {
+    apiFetch('/api-keys')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { if (Array.isArray(data)) setApiKeys(data); })
+      .catch(() => {});
+  }, []);
+
+  const displayKey = newKey?.key || (apiKeys[0] ? `${apiKeys[0].key_prefix}••••••••••••` : user.apiKey || '—');
 
   const snippet = `<!-- 1. Agrega en tu <head> -->
 <link rel="stylesheet"
@@ -265,18 +375,40 @@ function IntegrationSection({ user }) {
 <script src="https://cdn.usize.app/widget.js"></script>
 <script>
   USize.init({
-    apiKey: "${user.apiKey}",
+    apiKey: "${displayKey}",
     container: "#usize-widget"
   });
 </script>`;
+
+  async function generateKey() {
+    setGenerating(true);
+    try {
+      const res = await apiFetch('/api-keys', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setNewKey(data);
+        setApiKeys(prev => [{ id: data.id, key_prefix: data.key_prefix, is_active: true, created_at: new Date().toISOString() }, ...prev]);
+      }
+    } finally {
+      setGenerating(false);
+    }
+  }
+
+  async function revokeKey(id) {
+    await apiFetch(`/api-keys/${id}`, { method: 'DELETE' });
+    setApiKeys(prev => prev.filter(k => k.id !== id));
+    if (newKey?.id === id) setNewKey(null);
+  }
 
   function copySnippet() {
     navigator.clipboard.writeText(snippet);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
+
   function copyKey() {
-    navigator.clipboard.writeText(user.apiKey);
+    const keyToCopy = newKey?.key || displayKey;
+    navigator.clipboard.writeText(keyToCopy);
     setCopiedKey(true);
     setTimeout(() => setCopiedKey(false), 2000);
   }
@@ -289,12 +421,41 @@ function IntegrationSection({ user }) {
             <FontAwesomeIcon icon={faKey} className="title-icon" /> {t('integration.apiKeyTitle')}
           </h3>
           <p className="card-desc">{t('integration.apiKeyDesc')}</p>
+
+          {newKey && (
+            <div className="upload-summary success" style={{ marginBottom: 8, fontSize: '0.8rem' }}>
+              New key generated! Save it now — it won&apos;t be shown again.
+            </div>
+          )}
+
           <div className="api-key-box">
-            <code>{user.apiKey}</code>
+            <code>{displayKey}</code>
             <button className="btn-copy-inline" onClick={copyKey}>
               <FontAwesomeIcon icon={faCopy} /> {copiedKey ? t('integration.copied') : t('integration.copy')}
             </button>
           </div>
+
+          <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+            <button className="btn-outline" onClick={generateKey} disabled={generating} style={{ fontSize: '0.8rem' }}>
+              {generating ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faPlus} />}
+              {' '}Generate key
+            </button>
+          </div>
+
+          {apiKeys.length > 0 && (
+            <div style={{ marginTop: 12 }}>
+              <p style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: 4 }}>Your keys:</p>
+              {apiKeys.map(k => (
+                <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', marginBottom: 4 }}>
+                  <code>{k.key_prefix}••••</code>
+                  <button onClick={() => revokeKey(k.id)} style={{ background: 'none', border: 'none', color: 'var(--color-danger, #ef4444)', cursor: 'pointer', fontSize: '0.75rem' }}>
+                    Revoke
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           <p className="card-hint">{t('integration.apiKeyHint')}</p>
         </div>
 

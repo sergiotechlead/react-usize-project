@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faSpinner, faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
@@ -15,15 +15,16 @@ export default function LoginPage() {
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
 
-  if (user) { navigate('/dashboard', { replace: true }); return null; }
+  useEffect(() => {
+    if (user) navigate('/dashboard', { replace: true });
+  }, [user, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
     setError('');
     setLoading(true);
     try {
-      await new Promise(r => setTimeout(r, 600));
-      login(email, password);
+      await login(email, password);
       navigate('/dashboard', { replace: true });
     } catch (err) {
       setError(err.message);

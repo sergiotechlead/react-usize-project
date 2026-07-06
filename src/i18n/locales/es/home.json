@@ -44,7 +44,7 @@
     "morePlans": "Ver comparación completa de planes",
     "popular": "Más popular",
     "plans": [
-      { "price": "Gratis", "limit": "500 predicciones/mes", "features": ["1 modelo", "Tallas XS–XXL", "Soporte por email"], "cta": "Empezar gratis" },
+      { "price": "Gratis", "limit": "100 predicciones/mes", "features": ["1 modelo", "Tallas XS–XXL", "Soporte por email"], "cta": "Empezar gratis" },
       { "price": "$29", "period": "/mes", "limit": "10 000 predicciones/mes", "features": ["3 modelos", "Widget personalizado", "Analytics avanzado", "Soporte prioritario"], "cta": "Probar Pro" },
       { "price": "Custom", "limit": "Predicciones ilimitadas", "features": ["Modelos ilimitados", "Branding propio", "SLA 99.9 %", "Manager dedicado"], "cta": "Contactar ventas" }
     ]

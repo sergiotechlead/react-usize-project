@@ -7,6 +7,7 @@ import PricingPage   from '../pages/Pricing/PricingPage';
 import DocsPage      from '../pages/Docs/DocsPage';
 import ContactPage   from '../pages/Contact/ContactPage';
 import DashboardPage from '../pages/Dashboard/DashboardPage';
+import AcceptInvitePage from '../pages/AcceptInvite/AcceptInvitePage';
 import NotFoundPage  from '../pages/NotFound/NotFoundPage';
 
 function ProtectedRoute({ children }) {
@@ -25,6 +26,7 @@ function App() {
         <Route path="/docs"      element={<DocsPage />} />
         <Route path="/contact"   element={<ContactPage />} />
         <Route path="/dashboard" element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+        <Route path="/accept-invite" element={<AcceptInvitePage />} />
         <Route path="*"          element={<NotFoundPage />} />
       </Routes>
     </HashRouter>

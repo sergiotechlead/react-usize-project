@@ -7,6 +7,7 @@ import {
   faDownload, faUpload, faPlay,
   faCopy, faRightFromBracket, faKey,
   faArrowTrendUp, faArrowTrendDown, faChevronRight, faPlus,
+  faUsers, faPaperPlane, faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 import * as XLSX from 'xlsx';
 import { useTranslation } from 'react-i18next';
@@ -536,11 +537,272 @@ function CustomizationSection() {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
+function TeamSection({ user }) {
+  const { t } = useTranslation('team');
+  const [org, setOrg]               = useState(null);
+  const [membership, setMembership] = useState(null);
+  const [members, setMembers]       = useState([]);
+  const [loaded, setLoaded]         = useState(false);
+  const [loadError, setLoadError]   = useState(false);
+
+  const [inviteEmail, setInviteEmail]     = useState('');
+  const [inviteRole, setInviteRole]       = useState('member');
+  const [inviting, setInviting]           = useState(false);
+  const [inviteMsg, setInviteMsg]         = useState(null); // { type: 'success'|'error', text }
+
+  const [readonlyData, setReadonlyData]     = useState(null);
+  const [readonlyError, setReadonlyError]   = useState(false);
+
+  function loadMe() {
+    apiFetch('/organizations/me')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => {
+        setOrg(data.organization || null);
+        setMembership(data.membership || null);
+        setMembers(Array.isArray(data.members) ? data.members : []);
+        setLoadError(false);
+      })
+      .catch(() => setLoadError(true))
+      .finally(() => setLoaded(true));
+  }
+
+  useEffect(() => {
+    loadMe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!org || !membership || membership.role === 'admin') return;
+    apiFetch('/organizations/dashboard')
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(data => { setReadonlyData(data); setReadonlyError(false); })
+      .catch(() => setReadonlyError(true));
+  }, [org, membership]);
+
+  async function handleInvite(e) {
+    e.preventDefault();
+    setInviting(true);
+    setInviteMsg(null);
+    try {
+      const res = await apiFetch('/organizations/invite', {
+        method: 'POST',
+        body: JSON.stringify({ email: inviteEmail, role: inviteRole }),
+      });
+      if (res.ok) {
+        setInviteMsg({ type: 'success', text: t('invite.success') });
+        setInviteEmail('');
+        loadMe();
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setInviteMsg({ type: 'error', text: body.message || t('invite.error') });
+      }
+    } catch {
+      setInviteMsg({ type: 'error', text: t('invite.error') });
+    } finally {
+      setInviting(false);
+    }
+  }
+
+  async function handleRoleChange(memberId, role) {
+    await apiFetch(`/organizations/members/${memberId}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role }),
+    });
+    loadMe();
+  }
+
+  async function handleRemove(memberId) {
+    if (!window.confirm(t('members.removeConfirm'))) return;
+    await apiFetch(`/organizations/members/${memberId}`, { method: 'DELETE' });
+    loadMe();
+  }
+
+  if (!loaded) {
+    return <div className="section-content"><p className="card-hint">…</p></div>;
+  }
+
+  if (!org) {
+    return (
+      <div className="section-content">
+        <div className="dash-card">
+          <p className="card-desc">{loadError ? t('readonly.loadError') : t('readonly.noOrganization')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (membership?.role === 'admin') {
+    return (
+      <div className="section-content">
+        <div className="dash-card">
+          <h3 className="card-title">{t('invite.title')}</h3>
+          <p className="card-desc">{t('invite.desc')}</p>
+          <form className="team-invite-form" onSubmit={handleInvite}>
+            <div className="team-invite-row">
+              <div className="custom-field" style={{ flex: 1, marginBottom: 0 }}>
+                <label htmlFor="team-invite-email">{t('invite.emailLabel')}</label>
+                <input
+                  id="team-invite-email" type="email" className="text-input"
+                  placeholder={t('invite.emailPlaceholder')}
+                  value={inviteEmail} onChange={e => setInviteEmail(e.target.value)} required
+                />
+              </div>
+              <div className="custom-field" style={{ marginBottom: 0 }}>
+                <label htmlFor="team-invite-role">{t('invite.roleLabel')}</label>
+                <select
+                  id="team-invite-role" className="select-input"
+                  value={inviteRole} onChange={e => setInviteRole(e.target.value)}
+                >
+                  <option value="member">{t('invite.roleMember')}</option>
+                  <option value="admin">{t('invite.roleAdmin')}</option>
+                </select>
+              </div>
+              <button type="submit" className="btn-primary-dash" disabled={inviting}>
+                {inviting
+                  ? <><FontAwesomeIcon icon={faSpinner} spin /> {t('invite.submitting')}</>
+                  : <><FontAwesomeIcon icon={faPaperPlane} /> {t('invite.submit')}</>
+                }
+              </button>
+            </div>
+          </form>
+          {inviteMsg && (
+            <div className={`upload-summary ${inviteMsg.type}`} style={{ marginTop: 12 }}>
+              {inviteMsg.text}
+            </div>
+          )}
+        </div>
+
+        <div className="dash-card">
+          <h3 className="card-title">{t('members.title')}</h3>
+          {members.length === 0 ? (
+            <p className="card-hint">{t('members.empty')}</p>
+          ) : (
+            <table className="team-members-table">
+              <thead>
+                <tr>
+                  <th>{t('members.colEmail')}</th>
+                  <th>{t('members.colRole')}</th>
+                  <th>{t('members.colStatus')}</th>
+                  <th>{t('members.colActions')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {members.map(m => (
+                  <tr key={m.id}>
+                    <td>{m.email}</td>
+                    <td>
+                      <select
+                        className="select-input team-role-select"
+                        value={m.role}
+                        onChange={e => handleRoleChange(m.id, e.target.value)}
+                      >
+                        <option value="member">{t('invite.roleMember')}</option>
+                        <option value="admin">{t('invite.roleAdmin')}</option>
+                      </select>
+                    </td>
+                    <td>
+                      <span className={`team-status-badge ${m.status}`}>
+                        {m.status === 'active' ? t('members.statusActive') : t('members.statusPending')}
+                      </span>
+                    </td>
+                    <td>
+                      <button className="team-remove-btn" onClick={() => handleRemove(m.id)}>
+                        <FontAwesomeIcon icon={faTrash} /> {t('members.removeBtn')}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="section-content">
+      <div className="team-readonly-banner">{t('readonly.banner')}</div>
+
+      {readonlyError && <p className="card-hint">{t('readonly.loadError')}</p>}
+
+      {readonlyData && (
+        <>
+          {readonlyData.overview && (
+            <div className="stats-grid">
+              {Object.entries(readonlyData.overview).map(([key, value]) => (
+                <div key={key} className="stat-card">
+                  <p className="stat-label">{key}</p>
+                  <p className="stat-value">{typeof value === 'number' ? value : String(value)}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {Array.isArray(readonlyData.distribution) && readonlyData.distribution.length > 0 && (
+            <div className="dist-card">
+              <h3 className="card-title">{t('readonly.distTitle')}</h3>
+              <div className="dist-bars">
+                {readonlyData.distribution.map(({ size, pct }) => (
+                  <div key={size} className="dist-row">
+                    <span className="dist-size">{size}</span>
+                    <div className="dist-bar-track">
+                      <div className="dist-bar-fill" style={{ width: `${pct}%`, background: 'var(--color-accent)' }} />
+                    </div>
+                    <span className="dist-pct">{pct} %</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {Array.isArray(readonlyData.models) && readonlyData.models.length > 0 && (
+            <div className="dash-card">
+              <h3 className="card-title">{t('readonly.modelsTitle')}</h3>
+              <table className="team-members-table">
+                <thead>
+                  <tr>
+                    <th>{t('readonly.modelName')}</th>
+                    <th>{t('readonly.modelStatus')}</th>
+                    <th>{t('readonly.modelAccuracy')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {readonlyData.models.map(m => (
+                    <tr key={m.id}>
+                      <td>{m.name}</td>
+                      <td>{m.status}</td>
+                      <td>{m.accuracy != null ? `${Math.round(m.accuracy * 1000) / 10}%` : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const navigate         = useNavigate();
   const { t }            = useTranslation('dashboard');
   const [activeTab, setActiveTab] = useState('overview');
+
+  const isEnterprise = (user?.plan || '').toLowerCase() === 'enterprise';
+  const navIds   = isEnterprise ? [...NAV_IDS, 'team']   : NAV_IDS;
+  const navIcons = isEnterprise ? [...NAV_ICONS, faUsers] : NAV_ICONS;
+
+  useEffect(() => {
+    const pendingToken = sessionStorage.getItem('usize_invite_token');
+    if (!pendingToken || !user) return;
+    apiFetch('/organizations/accept-invite', { method: 'POST', body: JSON.stringify({ token: pendingToken }) })
+      .then(r => { if (r.ok) sessionStorage.removeItem('usize_invite_token'); })
+      .catch(() => {});
+  }, [user]);
 
   function handleLogout() {
     logout();
@@ -560,13 +822,13 @@ export default function DashboardPage() {
             <span className="sidebar-brand-name">USize</span>
           </Link>
           <nav className="sidebar-nav">
-            {NAV_IDS.map((id, i) => (
+            {navIds.map((id, i) => (
               <button
                 key={id}
                 className={`sidebar-item${activeTab === id ? ' active' : ''}`}
                 onClick={() => setActiveTab(id)}
               >
-                <FontAwesomeIcon icon={NAV_ICONS[i]} className="sidebar-icon" />
+                <FontAwesomeIcon icon={navIcons[i]} className="sidebar-icon" />
                 <span>{t(`nav.${id}`)}</span>
                 {activeTab === id && (
                   <FontAwesomeIcon icon={faChevronRight} className="sidebar-active-arrow" />
@@ -609,6 +871,7 @@ export default function DashboardPage() {
           {activeTab === 'model'         && <ModelSection user={user} />}
           {activeTab === 'integration'   && <IntegrationSection user={user} />}
           {activeTab === 'customization' && <CustomizationSection />}
+          {activeTab === 'team'          && <TeamSection user={user} />}
         </div>
       </main>
     </div>

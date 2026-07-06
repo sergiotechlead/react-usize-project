@@ -1,0 +1,50 @@
+{
+  "invite": {
+    "title": "Invitar a un miembro",
+    "desc": "Dale a alguien de tu equipo acceso al dashboard de esta organización.",
+    "emailLabel": "Correo electrónico",
+    "emailPlaceholder": "compañero@empresa.com",
+    "roleLabel": "Rol",
+    "roleAdmin": "Admin",
+    "roleMember": "Miembro",
+    "submit": "Enviar invitación",
+    "submitting": "Enviando...",
+    "success": "Invitación enviada.",
+    "error": "No se pudo enviar la invitación."
+  },
+  "members": {
+    "title": "Miembros del equipo",
+    "colEmail": "Correo electrónico",
+    "colRole": "Rol",
+    "colStatus": "Estado",
+    "colActions": "Acciones",
+    "statusPending": "Pendiente",
+    "statusActive": "Activo",
+    "removeBtn": "Quitar",
+    "removeConfirm": "¿Quitar a este miembro de tu organización? Esta acción no se puede deshacer.",
+    "empty": "Aún no hay miembros en el equipo. Invita a alguien arriba para empezar."
+  },
+  "readonly": {
+    "banner": "Estás viendo el dashboard de esta organización como miembro. Solo los admins pueden invitar o gestionar compañeros.",
+    "overviewTitle": "Resumen de la organización",
+    "distTitle": "Distribución de tallas predichas",
+    "modelsTitle": "Modelos",
+    "modelName": "Nombre",
+    "modelStatus": "Estado",
+    "modelAccuracy": "Accuracy",
+    "noOrganization": "Todavía no formas parte de una organización.",
+    "loadError": "No se pudo cargar el dashboard de la organización."
+  },
+  "acceptInvite": {
+    "loading": "Verificando tu invitación…",
+    "successTitle": "¡Listo!",
+    "successDesc": "Te has unido a la organización. Ve a tu dashboard para empezar.",
+    "goToDashboard": "Ir al dashboard",
+    "genericError": "Este enlace de invitación no es válido o ha expirado.",
+    "invalidLink": "Enlace de invitación inválido.",
+    "needAuthTitle": "Necesitas una cuenta para aceptar esta invitación",
+    "needAuthDesc": "Inicia sesión o crea una cuenta gratis para unirte a esta organización.",
+    "signIn": "Iniciar sesión",
+    "createAccount": "Crear una cuenta"
+  }
+}

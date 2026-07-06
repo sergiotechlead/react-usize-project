@@ -1,0 +1,50 @@
+{
+  "invite": {
+    "title": "Invite a teammate",
+    "desc": "Give someone on your team access to this organization's dashboard.",
+    "emailLabel": "Email",
+    "emailPlaceholder": "teammate@company.com",
+    "roleLabel": "Role",
+    "roleAdmin": "Admin",
+    "roleMember": "Member",
+    "submit": "Send invite",
+    "submitting": "Sending...",
+    "success": "Invitation sent.",
+    "error": "Could not send the invitation."
+  },
+  "members": {
+    "title": "Team members",
+    "colEmail": "Email",
+    "colRole": "Role",
+    "colStatus": "Status",
+    "colActions": "Actions",
+    "statusPending": "Pending",
+    "statusActive": "Active",
+    "removeBtn": "Remove",
+    "removeConfirm": "Remove this member from your organization? This cannot be undone.",
+    "empty": "No team members yet. Invite someone above to get started."
+  },
+  "readonly": {
+    "banner": "You're viewing this organization's dashboard as a member. Only admins can invite or manage teammates.",
+    "overviewTitle": "Organization overview",
+    "distTitle": "Predicted size distribution",
+    "modelsTitle": "Models",
+    "modelName": "Name",
+    "modelStatus": "Status",
+    "modelAccuracy": "Accuracy",
+    "noOrganization": "You're not part of an organization yet.",
+    "loadError": "Could not load the organization dashboard."
+  },
+  "acceptInvite": {
+    "loading": "Checking your invite…",
+    "successTitle": "You're in!",
+    "successDesc": "You've joined the organization. Head to your dashboard to get started.",
+    "goToDashboard": "Go to dashboard",
+    "genericError": "This invite link is invalid or has expired.",
+    "invalidLink": "Invalid invite link.",
+    "needAuthTitle": "You need an account to accept this invite",
+    "needAuthDesc": "Sign in or create a free account to join this organization.",
+    "signIn": "Sign in",
+    "createAccount": "Create an account"
+  }
+}

@@ -102,7 +102,7 @@
     "predictDesc": "Runs a prediction manually. Returns a promise with the result.",
     "onDesc": "Subscribes to widget events.",
     "onCode": "USize.on(\"predict\", ({ size, confidence }) => {\n  console.log(\"Predicted size:\", size);\n  // Here you can integrate with your analytics\n  gtag(\"event\", \"usize_predict\", { size });\n});\n\n// Available events:\n// \"predict\"  — when a prediction is made\n// \"open\"     — when the modal opens\n// \"close\"    — when the modal closes",
-    "callout": "Events are only available on Pro and Enterprise plans."
+    "callout": "Events are available on every plan."
   },
   "integration": {
     "title": "Platform integration",

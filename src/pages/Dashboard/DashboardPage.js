@@ -126,6 +126,8 @@ function ModelSection({ user }) {
   const logEndRef = useRef(null);
 
   useEffect(() => {
+    // Intentionally runs once on mount to seed the initial model list;
+    // activeModelId is read only to avoid clobbering a value set elsewhere.
     apiFetch('/models')
       .then(r => r.ok ? r.json() : [])
       .then(data => {
@@ -135,6 +137,7 @@ function ModelSection({ user }) {
         }
       })
       .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function ensureModel() {

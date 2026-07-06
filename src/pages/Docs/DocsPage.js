@@ -381,7 +381,7 @@ function usize_widget() { ?>
               <Callout type="info">
                 <Trans
                   i18nKey="docs:faq.callout"
-                  components={{ mail: <a href="mailto:soporte@usize.app" /> }}
+                  components={{ mail: <a href="mailto:soporte@usize.app">{/* content injected by Trans */}soporte@usize.app</a> }}
                 />
               </Callout>
             </article>

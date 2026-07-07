@@ -1,5 +1,6 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import SkipToContent from '../components/SkipToContent';
 import HomePage      from '../pages/Home/HomePage';
 import LoginPage     from '../pages/Login/LoginPage';
 import RegisterPage  from '../pages/Register/RegisterPage';
@@ -18,6 +19,7 @@ function ProtectedRoute({ children }) {
 function App() {
   return (
     <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <SkipToContent />
       <Routes>
         <Route path="/"          element={<HomePage />} />
         <Route path="/login"     element={<LoginPage />} />

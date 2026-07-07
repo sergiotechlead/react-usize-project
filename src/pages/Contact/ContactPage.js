@@ -7,11 +7,14 @@ import {
 import { useTranslation } from 'react-i18next';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import './ContactPage.css';
 
 export default function ContactPage() {
   const { t } = useTranslation('contact');
   const VOLUME_OPTIONS = t('form.volumeOptions', { returnObjects: true });
+
+  usePageTitle(t('pageTitle'));
 
   const [form, setForm] = useState({
     name: '', company: '', email: '', role: '', volume: '', message: '',
@@ -46,7 +49,7 @@ export default function ContactPage() {
     <div className="contact-page">
       <Navbar activePage="contact" />
 
-      <div className="contact-layout">
+      <div className="contact-layout" id="main-content">
         {/* Left — info */}
         <aside className="contact-info">
           <div className="section-label">{t('label')}</div>
@@ -57,21 +60,21 @@ export default function ContactPage() {
             <div className="contact-card">
               <div className="contact-card-icon"><FontAwesomeIcon icon={faHeadset} /></div>
               <div>
-                <h3>{t('cards.support.title')}</h3>
+                <h2>{t('cards.support.title')}</h2>
                 <p>{t('cards.support.desc')}</p>
               </div>
             </div>
             <div className="contact-card">
               <div className="contact-card-icon"><FontAwesomeIcon icon={faClock} /></div>
               <div>
-                <h3>{t('cards.response.title')}</h3>
+                <h2>{t('cards.response.title')}</h2>
                 <p>{t('cards.response.desc')}</p>
               </div>
             </div>
             <div className="contact-card">
               <div className="contact-card-icon"><FontAwesomeIcon icon={faEnvelope} /></div>
               <div>
-                <h3>{t('cards.email.title')}</h3>
+                <h2>{t('cards.email.title')}</h2>
                 <p><a href="mailto:enterprise@usize.app">enterprise@usize.app</a></p>
               </div>
             </div>
@@ -81,7 +84,7 @@ export default function ContactPage() {
         {/* Right — form */}
         <div className="contact-form-wrap">
           {submitted ? (
-            <div className="contact-success">
+            <div className="contact-success" role="status" aria-live="polite">
               <div className="contact-success-icon">
                 <FontAwesomeIcon icon={faCircleCheck} />
               </div>

@@ -18,6 +18,7 @@
   "meter": {
     "tight": "Ajustado",
     "perfect": "A medida",
-    "loose": "Holgado"
+    "loose": "Holgado",
+    "indicatorAlt": "Indicador de posición de ajuste"
   }
 }

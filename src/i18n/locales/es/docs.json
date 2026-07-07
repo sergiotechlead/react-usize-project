@@ -1,6 +1,8 @@
 {
+  "pageTitle": "Documentación — USize",
   "sidebar": "Documentación",
   "mobileMenu": "Menú de documentación",
+  "closeSidebar": "Cerrar menú",
   "copy": "Copiar",
   "copied": "Copiado",
   "sections": {

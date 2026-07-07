@@ -1,11 +1,13 @@
 {
+  "pageTitle": "Pricing — USize",
   "hero": {
     "label": "Pricing",
     "title": "Simple and transparent",
     "desc": "No hidden fees. Cancel anytime. Start for free and scale when you need it.",
     "monthly": "Monthly",
     "annual": "Annual",
-    "annualBadge": "-20%"
+    "annualBadge": "-20%",
+    "toggleLabel": "Switch between monthly and annual billing"
   },
   "priceCustom": "Custom",
   "priceFree": "Free",

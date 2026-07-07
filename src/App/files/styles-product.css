@@ -4,10 +4,25 @@
   --color-bg-elevated:  #071223;
   --color-bg-card:      rgba(7, 18, 35, 0.85);
   --color-text:         #e7edf3;
-  --color-text-muted:   #6b7c93;
-  --color-text-subtle:  #3d5068;
+  /* Lightened from the original #6b7c93 / #3d5068 — those failed WCAG 1.4.3
+     (4.69:1 / 4.4:1 and 2.42:1 / 2.27:1 against --color-bg / --color-bg-elevated).
+     New values verified with the WCAG relative-luminance formula:
+     --color-text-muted  vs --color-bg: 5.4:1, vs --color-bg-elevated: 5.07:1
+     --color-text-subtle vs --color-bg: 5.4:1, vs --color-bg-elevated: 5.07:1 */
+  --color-text-muted:   #77869c;
+  --color-text-subtle:  #6c87a9;
   --color-accent:       #53a0f8;
   --color-accent-hover: #7ab8fa;
+  /* Dedicated darker shades for solid buttons/controls where WHITE text or a
+     white toggle-thumb sits on top of this color — the base --color-accent
+     only gives 2.71:1 against white (fails 1.4.3's 4.5:1). These give 4.7:1
+     and 5.41:1 respectively while still remaining >=3:1 against the dark
+     page background, so they read as the same brand blue. Kept as separate
+     tokens (not a replacement of --color-accent) because --color-accent is
+     also used as TEXT/icon color directly on the dark background, where it
+     already passes 7.37:1 and going this dark would fail that use instead. */
+  --color-accent-solid:       #0970e6;
+  --color-accent-solid-hover: #0967d2;
   --color-accent-dim:   rgba(83, 160, 248, 0.12);
   --color-accent-glow:  rgba(83, 160, 248, 0.25);
   --color-success:      #5db35d;
@@ -71,4 +86,48 @@ input {
 img {
   max-width: 100%;
   display: block;
+}
+
+/* ── Focus visibility (WCAG 2.4.7 / 1.4.11) ──────────
+   `button { outline: none; }` above (and several per-component
+   `outline: none` rules) strip the browser default with nothing put back,
+   so keyboard users get zero visible focus indicator on most interactive
+   elements. This restores one globally, only for keyboard focus
+   (:focus-visible, not click-triggered :focus), using an existing token.
+   --color-accent-hover gives 9.57:1 against --color-bg and 8.99:1 against
+   --color-bg-elevated — both far above the 3:1 required for a non-text
+   focus indicator — and every surface this app renders on is one of those
+   two dark tokens (this is a dark-theme-only app), so a single color works
+   everywhere without a separate light-surface variant. */
+:focus-visible {
+  outline: 2px solid var(--color-accent-hover);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Skip to content link (WCAG 2.4.1 Bypass Blocks) ── */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+.skip-link:focus {
+  position: fixed;
+  left: 16px;
+  top: 16px;
+  width: auto;
+  height: auto;
+  z-index: 10000;
+  padding: 10px 16px;
+  /* --color-accent-solid (not --color-accent) — this label renders white
+     text, and only the solid shade clears 4.5:1 against white (see the
+     --color-accent-solid definition above). */
+  background: var(--color-accent-solid);
+  color: #fff;
+  border-radius: var(--radius-md);
+  outline: 2px solid #fff;
+  outline-offset: 2px;
 }

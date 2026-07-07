@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth, apiFetch } from '../../context/AuthContext';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import './AcceptInvitePage.css';
 
 const INVITE_TOKEN_KEY = 'usize_invite_token';
@@ -18,6 +19,8 @@ export default function AcceptInvitePage() {
 
   const [status, setStatus]   = useState(token ? 'loading' : 'no-token');
   const [error, setError]     = useState('');
+
+  usePageTitle(t('acceptInvite.pageTitle'));
 
   useEffect(() => {
     if (!token) {
@@ -60,17 +63,17 @@ export default function AcceptInvitePage() {
     <div className="accept-invite-page">
       <Navbar />
 
-      <div className="accept-invite-layout">
+      <div className="accept-invite-layout" id="main-content">
         <div className="accept-invite-card">
           {status === 'loading' && (
-            <div className="ai-state">
+            <div className="ai-state" role="status" aria-live="polite">
               <FontAwesomeIcon icon={faSpinner} spin className="ai-state-icon" />
               <p>{t('acceptInvite.loading')}</p>
             </div>
           )}
 
           {status === 'no-token' && (
-            <div className="ai-state">
+            <div className="ai-state" role="alert">
               <FontAwesomeIcon icon={faCircleXmark} className="ai-state-icon error" />
               <p>{t('acceptInvite.invalidLink')}</p>
             </div>
@@ -79,7 +82,7 @@ export default function AcceptInvitePage() {
           {status === 'need-auth' && (
             <div className="ai-state">
               <FontAwesomeIcon icon={faUserPlus} className="ai-state-icon" />
-              <h2>{t('acceptInvite.needAuthTitle')}</h2>
+              <h1>{t('acceptInvite.needAuthTitle')}</h1>
               <p>{t('acceptInvite.needAuthDesc')}</p>
               <div className="ai-actions">
                 <Link to="/login" className="ai-btn-primary">{t('acceptInvite.signIn')}</Link>
@@ -89,9 +92,9 @@ export default function AcceptInvitePage() {
           )}
 
           {status === 'success' && (
-            <div className="ai-state">
+            <div className="ai-state" role="status" aria-live="polite">
               <FontAwesomeIcon icon={faCircleCheck} className="ai-state-icon success" />
-              <h2>{t('acceptInvite.successTitle')}</h2>
+              <h1>{t('acceptInvite.successTitle')}</h1>
               <p>{t('acceptInvite.successDesc')}</p>
               <div className="ai-actions">
                 <Link to="/dashboard" className="ai-btn-primary">{t('acceptInvite.goToDashboard')}</Link>
@@ -100,7 +103,7 @@ export default function AcceptInvitePage() {
           )}
 
           {status === 'error' && (
-            <div className="ai-state">
+            <div className="ai-state" role="alert">
               <FontAwesomeIcon icon={faCircleXmark} className="ai-state-icon error" />
               <p>{error || t('acceptInvite.genericError')}</p>
             </div>

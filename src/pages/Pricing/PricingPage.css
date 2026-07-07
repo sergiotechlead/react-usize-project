@@ -51,7 +51,10 @@
   cursor: pointer;
   transition: background .2s;
 }
-.toggle-switch.on { background: var(--color-accent); }
+/* --color-accent-solid: the white toggle-thumb on --color-accent only
+   measures 2.71:1 (fails WCAG 1.4.11's 3:1 non-text contrast) — see token
+   comment in styles-product.css */
+.toggle-switch.on { background: var(--color-accent-solid); }
 .toggle-thumb {
   position: absolute;
   top: 3px; left: 3px;
@@ -180,13 +183,15 @@
 }
 .plan-cta-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
 .plan-cta-btn.primary {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
+  /* --color-accent-solid: white text on --color-accent only measures
+     2.71:1 (fails WCAG 1.4.3's 4.5:1) — see token comment in styles-product.css */
+  background: var(--color-accent-solid);
+  border-color: var(--color-accent-solid);
   color: #fff;
 }
 .plan-cta-btn.primary:hover {
-  background: var(--color-accent-hover);
-  border-color: var(--color-accent-hover);
+  background: var(--color-accent-solid-hover);
+  border-color: var(--color-accent-solid-hover);
   color: #fff;
 }
 
@@ -299,7 +304,9 @@
 .cta-banner-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
 .btn-cta-primary {
   padding: 13px 28px;
-  background: var(--color-accent);
+  /* --color-accent-solid: white text on --color-accent only measures
+     2.71:1 (fails WCAG 1.4.3's 4.5:1) — see token comment in styles-product.css */
+  background: var(--color-accent-solid);
   color: #fff;
   text-decoration: none;
   font-size: 15px;
@@ -307,7 +314,7 @@
   border-radius: var(--radius-full);
   transition: background .2s, box-shadow .2s;
 }
-.btn-cta-primary:hover { background: var(--color-accent-hover); box-shadow: 0 4px 16px rgba(83,160,248,.35); }
+.btn-cta-primary:hover { background: var(--color-accent-solid-hover); box-shadow: 0 4px 16px rgba(83,160,248,.35); }
 .btn-cta-secondary {
   padding: 13px 28px;
   border: 1px solid var(--color-border);

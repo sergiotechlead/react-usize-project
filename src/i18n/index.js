@@ -43,4 +43,13 @@ i18n
     interpolation: { escapeValue: false },
   });
 
+// WCAG 3.1.1 (Language of Page): keep <html lang> in sync with whichever
+// language is actually active, both on first load and every time the user
+// switches languages via the Navbar's language switcher (i18n.changeLanguage
+// fires this event regardless of which component triggered the change).
+document.documentElement.lang = lng;
+i18n.on('languageChanged', (nextLng) => {
+  document.documentElement.lang = nextLng;
+});
+
 export default i18n;

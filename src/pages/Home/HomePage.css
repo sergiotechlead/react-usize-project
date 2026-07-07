@@ -46,7 +46,9 @@
   font-size: 14px;
   font-weight: 600;
   color: #fff;
-  background: var(--color-accent);
+  /* --color-accent-solid: white text on --color-accent only measures
+     2.71:1 (fails WCAG 1.4.3's 4.5:1) — see token comment in styles-product.css */
+  background: var(--color-accent-solid);
   text-decoration: none;
   padding: 9px 18px;
   border-radius: var(--radius-full);
@@ -54,7 +56,7 @@
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
 }
-.btn-nav-primary:hover { background: var(--color-accent-hover); box-shadow: 0 4px 16px rgba(83,160,248,.35); }
+.btn-nav-primary:hover { background: var(--color-accent-solid-hover); box-shadow: 0 4px 16px rgba(83,160,248,.35); }
 
 /* ── Hero ────────────────────────────────────────────── */
 .hero {
@@ -101,7 +103,9 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--color-accent);
+  /* --color-accent-solid: white text on --color-accent only measures
+     2.71:1 (fails WCAG 1.4.3's 4.5:1) — see token comment in styles-product.css */
+  background: var(--color-accent-solid);
   color: #fff;
   font-size: 15px;
   font-weight: 600;
@@ -112,7 +116,7 @@
   transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 .btn-hero-primary:hover:not(:disabled) {
-  background: var(--color-accent-hover);
+  background: var(--color-accent-solid-hover);
   box-shadow: 0 6px 24px rgba(83,160,248,.4);
   transform: translateY(-1px);
 }
@@ -182,7 +186,9 @@
 .mockup-cta-btn {
   margin-top: 4px;
   padding: 8px 12px;
-  background: var(--color-accent);
+  /* --color-accent-solid: white text on --color-accent only measures
+     2.71:1 (fails WCAG 1.4.3's 4.5:1) — see token comment in styles-product.css */
+  background: var(--color-accent-solid);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
@@ -192,7 +198,7 @@
   transition: background 0.15s;
   text-align: center;
 }
-.mockup-cta-btn:hover:not(.disabled) { background: var(--color-accent-hover); }
+.mockup-cta-btn:hover:not(.disabled) { background: var(--color-accent-solid-hover); }
 .mockup-cta-btn.disabled { opacity: .5; cursor: not-allowed; }
 
 /* ── Sections shared ─────────────────────────────────── */
@@ -367,11 +373,13 @@
 }
 .plan-cta:hover { background: var(--color-accent-dim); border-color: var(--color-accent); }
 .plan-cta--primary {
-  background: var(--color-accent);
+  /* --color-accent-solid: white text on --color-accent only measures
+     2.71:1 (fails WCAG 1.4.3's 4.5:1) — see token comment in styles-product.css */
+  background: var(--color-accent-solid);
   color: #fff;
-  border-color: var(--color-accent);
+  border-color: var(--color-accent-solid);
 }
-.plan-cta--primary:hover { background: var(--color-accent-hover); border-color: var(--color-accent-hover); }
+.plan-cta--primary:hover { background: var(--color-accent-solid-hover); border-color: var(--color-accent-solid-hover); }
 
 /* ── Footer ──────────────────────────────────────────── */
 .home-footer {

@@ -1,11 +1,13 @@
 {
+  "pageTitle": "Precios — USize",
   "hero": {
     "label": "Precios",
     "title": "Simple y transparente",
     "desc": "Sin tarifas ocultas. Cancela en cualquier momento. Empieza gratis y escala cuando lo necesites.",
     "monthly": "Mensual",
     "annual": "Anual",
-    "annualBadge": "-20 %"
+    "annualBadge": "-20 %",
+    "toggleLabel": "Alternar entre facturación mensual y anual"
   },
   "priceCustom": "Custom",
   "priceFree": "Gratis",

@@ -9,6 +9,7 @@ import {
 import { useTranslation, Trans } from 'react-i18next';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import './DocsPage.css';
 
 const SECTION_ICONS = {
@@ -33,7 +34,7 @@ function CodeBlock({ lang, code, label }) {
     <div className="doc-code-block">
       <div className="doc-code-bar">
         <span className="doc-code-lang">{lang || label}</span>
-        <button className="doc-code-copy" onClick={copy}>
+        <button className="doc-code-copy" onClick={copy} aria-live="polite">
           <FontAwesomeIcon icon={faCopy} /> {copied ? t('copied') : t('copy')}
         </button>
       </div>
@@ -72,6 +73,8 @@ export default function DocsPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  usePageTitle(`${t(`sections.${active}`)} — ${t('pageTitle')}`);
+
   return (
     <div className="docs-page">
       <Navbar activePage="docs" />
@@ -81,7 +84,7 @@ export default function DocsPage() {
         <aside className={`docs-sidebar${sidebarOpen ? ' is-open' : ''}`}>
           <div className="docs-sidebar-header">
             <span>{t('sidebar')}</span>
-            <button className="docs-sidebar-close" onClick={() => setSidebarOpen(false)}>
+            <button className="docs-sidebar-close" onClick={() => setSidebarOpen(false)} aria-label={t('closeSidebar')}>
               <FontAwesomeIcon icon={faXmark} />
             </button>
           </div>
@@ -91,6 +94,7 @@ export default function DocsPage() {
                 key={id}
                 className={`docs-nav-item${active === id ? ' is-active' : ''}`}
                 onClick={() => navTo(id)}
+                aria-current={active === id ? 'page' : undefined}
               >
                 <FontAwesomeIcon icon={SECTION_ICONS[id]} className="docs-nav-icon" />
                 {t(`sections.${id}`)}
@@ -105,7 +109,7 @@ export default function DocsPage() {
         </button>
 
         {/* Content */}
-        <main className="docs-content">
+        <main className="docs-content" id="main-content">
 
           {active === 'intro' && (
             <article className="doc-article">

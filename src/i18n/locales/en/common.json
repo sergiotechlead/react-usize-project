@@ -32,5 +32,8 @@
     "select": "Language",
     "es": "Español",
     "en": "English"
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content"
   }
 }

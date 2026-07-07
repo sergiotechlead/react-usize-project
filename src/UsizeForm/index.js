@@ -34,7 +34,7 @@ function SizeMeter({ size }) {
         <img
           className="size-meter-marker"
           src={svg}
-          alt="indicator"
+          alt={t('meter.indicatorAlt')}
           style={{ left: `${position}%` }}
         />
       </div>
@@ -62,6 +62,7 @@ function FieldInput({ field, value, onChange, touched, onBlur }) {
   const { t } = useTranslation('form');
   const isInvalid = touched && value === '';
   const unitLabel = field.unit === 'ageUnit' ? t('ageUnit') : field.unit;
+  const errorHintId = `${field.id}-error`;
 
   return (
     <div className={`field-group${isInvalid ? ' field-group--invalid' : ''}`}>
@@ -77,11 +78,13 @@ function FieldInput({ field, value, onChange, touched, onBlur }) {
           onChange={e => onChange(field.id, e.target.value)}
           onBlur={() => onBlur(field.id)}
           required
+          aria-invalid={isInvalid}
+          aria-describedby={isInvalid ? errorHintId : undefined}
         />
         {unitLabel && <span className="field-unit">{unitLabel}</span>}
       </div>
       {isInvalid && (
-        <span className="field-error-hint">{t('requiredHint')}</span>
+        <span className="field-error-hint" id={errorHintId} role="alert">{t('requiredHint')}</span>
       )}
     </div>
   );

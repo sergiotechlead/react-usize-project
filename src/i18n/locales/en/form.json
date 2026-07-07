@@ -18,6 +18,7 @@
   "meter": {
     "tight": "Tight",
     "perfect": "Perfect fit",
-    "loose": "Loose"
+    "loose": "Loose",
+    "indicatorAlt": "Fit position indicator"
   }
 }

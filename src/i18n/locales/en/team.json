@@ -21,7 +21,9 @@
     "statusPending": "Pending",
     "statusActive": "Active",
     "removeBtn": "Remove",
+    "removeConfirmTitle": "Remove member?",
     "removeConfirm": "Remove this member from your organization? This cannot be undone.",
+    "cancelBtn": "Cancel",
     "empty": "No team members yet. Invite someone above to get started."
   },
   "readonly": {
@@ -36,6 +38,7 @@
     "loadError": "Could not load the organization dashboard."
   },
   "acceptInvite": {
+    "pageTitle": "Accept invite — USize",
     "loading": "Checking your invite…",
     "successTitle": "You're in!",
     "successDesc": "You've joined the organization. Head to your dashboard to get started.",

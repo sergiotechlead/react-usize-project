@@ -8,20 +8,27 @@ import {
 import { useTranslation } from 'react-i18next';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import './PricingPage.css';
 
 const PLAN_ICONS = [faRocket, faGem, faBuilding];
 const PLAN_IDS   = ['starter', 'pro', 'enterprise'];
 
-function FaqItem({ q, a }) {
+function FaqItem({ q, a, id }) {
   const [open, setOpen] = useState(false);
+  const answerId = `${id}-answer`;
   return (
     <div className={`faq-item${open ? ' open' : ''}`}>
-      <button className="faq-question" onClick={() => setOpen(v => !v)}>
+      <button
+        className="faq-question"
+        onClick={() => setOpen(v => !v)}
+        aria-expanded={open}
+        aria-controls={answerId}
+      >
         <span>{q}</span>
         <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} className="faq-icon" />
       </button>
-      {open && <p className="faq-answer">{a}</p>}
+      {open && <p className="faq-answer" id={answerId}>{a}</p>}
     </div>
   );
 }
@@ -40,12 +47,14 @@ export default function PricingPage() {
   const COMPARISON = t('comparison.rows',  { returnObjects: true });
   const FAQS       = t('faq.items',        { returnObjects: true });
 
+  usePageTitle(t('pageTitle'));
+
   return (
     <div className="pricing-page">
       <Navbar activePage="pricing" />
 
       {/* ── Header ── */}
-      <section className="pricing-hero">
+      <section className="pricing-hero" id="main-content">
         <div className="section-label">{t('hero.label')}</div>
         <h1 className="pricing-hero-title">{t('hero.title')}</h1>
         <p className="pricing-hero-desc">{t('hero.desc')}</p>
@@ -57,6 +66,7 @@ export default function PricingPage() {
             onClick={() => setAnnual(v => !v)}
             role="switch"
             aria-checked={annual}
+            aria-label={t('hero.toggleLabel')}
           >
             <span className="toggle-thumb" />
           </button>
@@ -81,7 +91,7 @@ export default function PricingPage() {
                 <div className="plan-icon-wrap">
                   <FontAwesomeIcon icon={PLAN_ICONS[i]} />
                 </div>
-                <h3 className="plan-name">{p.name}</h3>
+                <h2 className="plan-name">{p.name}</h2>
                 <p className="plan-desc">{p.desc}</p>
                 <div className="plan-price-wrap">
                   {i === 2 ? (
@@ -154,7 +164,7 @@ export default function PricingPage() {
           <div className="section-label">{t('faq.label')}</div>
           <h2 className="section-title">{t('faq.title')}</h2>
           <div className="faq-list">
-            {FAQS.map((item, i) => <FaqItem key={i} q={item.q} a={item.a} />)}
+            {FAQS.map((item, i) => <FaqItem key={i} id={`pricing-faq-${i}`} q={item.q} a={item.a} />)}
           </div>
         </div>
       </section>

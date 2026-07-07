@@ -583,7 +583,9 @@
 
 .btn-primary-dash {
   padding: 11px 20px;
-  background: var(--color-accent);
+  /* --color-accent-solid: white text on --color-accent only measures
+     2.71:1 (fails WCAG 1.4.3's 4.5:1) — see token comment in styles-product.css */
+  background: var(--color-accent-solid);
   color: #fff;
   border: none;
   border-radius: var(--radius-md);
@@ -596,7 +598,7 @@
   transition: background .2s, box-shadow .2s, transform .15s;
 }
 .btn-primary-dash:hover:not(:disabled) {
-  background: var(--color-accent-hover);
+  background: var(--color-accent-solid-hover);
   box-shadow: 0 4px 16px rgba(83,160,248,.3);
   transform: translateY(-1px);
 }
@@ -896,25 +898,31 @@
 }
 .select-input option { background: #071223; }
 
-/* Widget preview mockup */
+/* Widget preview mockup — background is set inline from the merchant's chosen
+   modal_bg_color; text/line colors here assume a light background by default
+   (matching the widget's own real default) with a --dark variant for dark picks. */
 .preview-mockup {
   display: flex;
   gap: 14px;
   padding: 18px;
-  background: rgba(2,9,20,.5);
   border: 1px solid var(--color-border-dim);
   border-radius: var(--radius-lg);
+  transition: background .15s;
 }
 .preview-product-img {
   width: 80px; height: 100px;
-  background: rgba(83,160,248,.07);
+  background: rgba(0,0,0,.05);
   border-radius: var(--radius-md);
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 26px;
-  color: var(--color-text-subtle);
+  color: rgba(0,0,0,.35);
+}
+.preview-mockup--dark .preview-product-img {
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.45);
 }
 .preview-info {
   flex: 1;
@@ -926,7 +934,10 @@
 .preview-line {
   height: 10px;
   border-radius: var(--radius-full);
-  background: rgba(83,160,248,.12);
+  background: rgba(0,0,0,.1);
+}
+.preview-mockup--dark .preview-line {
+  background: rgba(255,255,255,.15);
 }
 .preview-line.w60 { width: 60%; }
 .preview-line.w40 { width: 40%; }
@@ -1072,6 +1083,53 @@
   gap: 10px;
   margin-top: 16px;
 }
+
+/* ── Confirm modal ────────────────────────────────────────────────────────────── */
+.confirm-modal-card {
+  padding: 28px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.confirm-modal-icon {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-full);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  background: var(--color-accent-dim, rgba(83,160,248,.12));
+  color: var(--color-accent);
+  margin-bottom: 14px;
+}
+.confirm-modal-icon--danger {
+  background: var(--color-error-bg);
+  color: var(--color-error);
+}
+.confirm-modal-title { margin-bottom: 8px; }
+.confirm-modal-message {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+.confirm-modal-actions {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+.confirm-modal-actions button { flex: 1; }
+.btn-danger-solid {
+  padding: 10px 16px;
+  background: var(--color-error);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.btn-danger-solid:hover { opacity: .88; }
 
 /* ── Architecture editor modal ───────────────────────────────────────────────── */
 .arch-preset-group {
@@ -1224,4 +1282,152 @@
   .model-card-actions { width: 100%; margin-left: 30px; }
   .model-card-actions .btn-outline,
   .model-card-actions .model-delete-btn { flex: 1; justify-content: center; }
+}
+
+/* ── Plan & Billing section ──────────────────────────────────────────────────── */
+.plan-current-card { margin-bottom: 20px; }
+.plan-current-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+.plan-current-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+  text-transform: capitalize;
+}
+.plan-renewal-hint { margin-bottom: 14px; }
+.plan-cancel-link {
+  background: none;
+  border: none;
+  color: var(--color-text-subtle);
+  font-size: 12.5px;
+  cursor: pointer;
+  margin-top: 16px;
+  text-decoration: underline;
+  padding: 0;
+}
+.plan-cancel-link:hover { color: var(--color-error); }
+
+.plan-pending-banner {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  background: rgba(245,158,11,.1);
+  border: 1px solid rgba(245,158,11,.25);
+  border-radius: var(--radius-md);
+  color: #f59e0b;
+  font-size: 13px;
+}
+.plan-pending-banner span { flex: 1; min-width: 200px; }
+.plan-pending-banner .plan-cancel-link { margin-top: 0; color: #f59e0b; }
+.plan-pending-banner .plan-cancel-link:hover { color: var(--color-error); }
+
+/* Billing cycle toggle — ported from PricingPage.css for visual consistency */
+.billing-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--color-text-muted);
+  margin-top: 4px;
+}
+.billing-toggle span.active { color: var(--color-text); font-weight: 600; }
+.toggle-switch {
+  width: 44px;
+  height: 24px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  border: none;
+  position: relative;
+  cursor: pointer;
+  transition: background .2s;
+}
+/* --color-accent-solid: the white toggle-thumb on --color-accent only
+   measures 2.71:1 (fails WCAG 1.4.11's 3:1 non-text contrast) — see token
+   comment in styles-product.css */
+.toggle-switch.on { background: var(--color-accent-solid); }
+.toggle-thumb {
+  position: absolute;
+  top: 3px; left: 3px;
+  width: 18px; height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform .2s;
+}
+.toggle-switch.on .toggle-thumb { transform: translateX(20px); }
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+.plan-option-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.plan-option-card--current { border-color: var(--color-accent); }
+.plan-current-badge {
+  position: absolute;
+  top: 16px; right: 16px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-dim, rgba(83,160,248,.12));
+  color: var(--color-accent);
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .3px;
+}
+.plan-current-badge--pending {
+  background: rgba(245,158,11,.12);
+  color: #f59e0b;
+}
+.plan-option-name { text-transform: capitalize; margin-bottom: 0; }
+.plan-option-price {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.plan-option-period {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+.plan-option-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12.5px;
+  color: var(--color-text-muted);
+  flex: 1;
+}
+.plan-contact-link { text-align: center; text-decoration: none; }
+
+/* Simulated payment modal */
+.payment-modal-desc { margin-bottom: 16px; }
+.payment-row { display: flex; gap: 12px; }
+.payment-disclaimer {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+
+/* ── Profile section ──────────────────────────────────────────────────────────── */
+.profile-readonly-value {
+  font-size: 14px;
+  color: var(--color-text-muted);
+  padding: 10px 0;
 }

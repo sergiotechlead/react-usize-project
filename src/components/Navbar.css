@@ -92,7 +92,9 @@
   font-size: 14px;
   font-weight: 600;
   color: #fff;
-  background: var(--color-accent);
+  /* --color-accent-solid: white text on --color-accent only measures
+     2.71:1 (fails WCAG 1.4.3's 4.5:1) — see token comment in styles-product.css */
+  background: var(--color-accent-solid);
   text-decoration: none;
   padding: 9px 18px;
   border-radius: var(--radius-full);
@@ -105,7 +107,7 @@
   transition: background 0.2s, box-shadow 0.2s;
 }
 .btn-nav-primary:hover {
-  background: var(--color-accent-hover);
+  background: var(--color-accent-solid-hover);
   box-shadow: 0 4px 16px rgba(83,160,248,.35);
 }
 

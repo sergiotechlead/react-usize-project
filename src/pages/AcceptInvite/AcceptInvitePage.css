@@ -29,7 +29,7 @@
 .ai-state-icon.success { color: #5db35d; }
 .ai-state-icon.error   { color: #ef7b7b; }
 
-.ai-state h2 {
+.ai-state h1 {
   font-size: 20px;
   font-weight: 700;
   color: var(--color-text);

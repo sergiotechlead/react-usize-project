@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight, faSpinner, faEnvelope, faLock } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import './LoginPage.css';
 
 export default function LoginPage() {
@@ -14,6 +15,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError]       = useState('');
   const [loading, setLoading]   = useState(false);
+
+  usePageTitle(t('login.pageTitle'));
 
   useEffect(() => {
     if (user) navigate('/dashboard', { replace: true });
@@ -34,7 +37,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="login-page">
+    <div className="login-page" id="main-content">
       <Link to="/" className="login-back">
         <FontAwesomeIcon icon={faArrowLeft} /> {t('backHome')}
       </Link>

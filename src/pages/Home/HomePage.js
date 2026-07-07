@@ -12,6 +12,8 @@ import { useModel } from '../../context/ModelContext';
 import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import UsizeForm from '../../UsizeForm';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import './HomePage.css';
 
 const STEP_ICONS  = [faFileArrowUp, faBrain, faCode];
@@ -19,7 +21,10 @@ const FEAT_ICONS  = [faCrosshairs, faShieldHalved, faMobile, faChartLine, faPale
 
 function DemoModal({ onClose }) {
   const overlayRef = useRef(null);
+  const cardRef = useRef(null);
   const { t } = useTranslation('home');
+
+  useFocusTrap(cardRef, true);
 
   useEffect(() => {
     const handler = (e) => { if (e.key === 'Escape') onClose(); };
@@ -33,12 +38,17 @@ function DemoModal({ onClose }) {
       className="modal-backdrop"
       ref={overlayRef}
       onClick={e => e.target === overlayRef.current && onClose()}
-      role="dialog"
-      aria-modal="true"
     >
-      <div className="modal-card">
+      <div
+        className="modal-card"
+        ref={cardRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="demo-modal-title"
+        tabIndex={-1}
+      >
         <div className="modal-header">
-          <h2 className="modal-title">{t('modal.title')}</h2>
+          <h2 className="modal-title" id="demo-modal-title">{t('modal.title')}</h2>
           <button className="modal-close-btn" onClick={onClose} aria-label={t('modal.closeLabel')}>
             <FontAwesomeIcon icon={faXmark} />
           </button>
@@ -59,6 +69,8 @@ export default function HomePage() {
   const FEATURES = t('features.items', { returnObjects: true });
   const PLANS    = t('pricing.plans',  { returnObjects: true });
 
+  usePageTitle(t('pageTitle'));
+
   useEffect(() => {
     const id = location.state?.scrollTo;
     if (!id) return;
@@ -73,7 +85,7 @@ export default function HomePage() {
       <Navbar />
 
       {/* ── Hero ── */}
-      <section className="hero">
+      <section className="hero" id="main-content">
         <div className="hero-content">
           <div className="hero-eyebrow">{t('hero.eyebrow')}</div>
           <h1 className="hero-title">

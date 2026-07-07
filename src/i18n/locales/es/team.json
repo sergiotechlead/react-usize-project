@@ -21,7 +21,9 @@
     "statusPending": "Pendiente",
     "statusActive": "Activo",
     "removeBtn": "Quitar",
+    "removeConfirmTitle": "¿Quitar miembro?",
     "removeConfirm": "¿Quitar a este miembro de tu organización? Esta acción no se puede deshacer.",
+    "cancelBtn": "Cancelar",
     "empty": "Aún no hay miembros en el equipo. Invita a alguien arriba para empezar."
   },
   "readonly": {
@@ -36,6 +38,7 @@
     "loadError": "No se pudo cargar el dashboard de la organización."
   },
   "acceptInvite": {
+    "pageTitle": "Aceptar invitación — USize",
     "loading": "Verificando tu invitación…",
     "successTitle": "¡Listo!",
     "successDesc": "Te has unido a la organización. Ve a tu dashboard para empezar.",

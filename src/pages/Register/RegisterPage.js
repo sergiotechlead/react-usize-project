@@ -7,12 +7,15 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
+import { usePageTitle } from '../../hooks/usePageTitle';
 import './RegisterPage.css';
 
 export default function RegisterPage() {
   const { register, user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation('auth');
+
+  usePageTitle(t('register.pageTitle'));
 
   const PLAN_OPTIONS = [
     { id: 'Starter', label: 'Starter', price: t('register.plans.starter.price'), desc: t('register.plans.starter.desc') },
@@ -50,7 +53,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="register-page">
+    <div className="register-page" id="main-content">
       <Link to="/" className="reg-back">
         <FontAwesomeIcon icon={faArrowLeft} /> {t('backHome')}
       </Link>

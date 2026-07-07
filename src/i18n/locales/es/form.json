@@ -13,6 +13,8 @@
   "tryAgain": "Volver a intentar",
   "errorModel": "Error al cargar el modelo. Verifica que haya sido entrenado.",
   "initializing": "Entrenando modelo base, esto toma unos segundos…",
+  "requiredHint": "Este campo es obligatorio",
+  "privacyNote": "Tus medidas se procesan en tu navegador y nunca se envían a un servidor.",
   "meter": {
     "tight": "Ajustado",
     "perfect": "A medida",

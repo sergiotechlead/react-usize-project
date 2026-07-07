@@ -7,13 +7,21 @@ import {
   faDownload, faUpload, faPlay,
   faCopy, faRightFromBracket, faKey,
   faArrowTrendUp, faArrowTrendDown, faChevronRight, faPlus,
-  faUsers, faPaperPlane, faTrash,
+  faUsers, faPaperPlane, faTrash, faSliders, faXmark, faGripVertical, faPen, faCheck, faShirt,
 } from '@fortawesome/free-solid-svg-icons';
 import * as XLSX from 'xlsx';
+import * as tf from '@tensorflow/tfjs';
 import { useTranslation } from 'react-i18next';
+import {
+  DndContext, PointerSensor, KeyboardSensor, useSensor, useSensors, closestCenter,
+} from '@dnd-kit/core';
+import {
+  SortableContext, verticalListSortingStrategy, horizontalListSortingStrategy,
+  sortableKeyboardCoordinates, useSortable, arrayMove,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 import { useAuth, apiFetch } from '../../context/AuthContext';
-import { useModel } from '../../context/ModelContext';
-import { DEFAULT_INPUT_DATA, DEFAULT_LABELS, SIZE_LABELS, trainModel, parseExcelRows } from '../../ml/modelConfig';
+import { DEFAULT_INPUT_DATA, DEFAULT_LABELS, SIZE_LABELS, trainModel, parseExcelRows, getModelStorageKey } from '../../ml/modelConfig';
 import './DashboardPage.css';
 
 const NAV_ICONS = [faGauge, faBrain, faCode, faPalette];
@@ -109,12 +117,443 @@ function SizeDistChart() {
   );
 }
 
+function PerModelOverview() {
+  const { t } = useTranslation('dashboard');
+  const [models, setModels] = useState([]);
+  const [distByModel, setDistByModel] = useState({}); // { [modelId]: [{size, count, pct}, ...] }
+  const COLORS = { XS: '#c084fc', S: 'var(--color-accent)', M: '#7ab8fa', L: '#5db35d', XL: '#ef7b7b', XXL: '#f59e0b' };
+
+  useEffect(() => {
+    apiFetch('/models')
+      .then(r => r.ok ? r.json() : [])
+      .then(async (data) => {
+        if (!Array.isArray(data)) return;
+        setModels(data);
+        const entries = await Promise.all(data.map(async (m) => {
+          const res = await apiFetch(`/predictions/distribution?modelId=${m.id}`);
+          return [m.id, res.ok ? await res.json() : []];
+        }));
+        setDistByModel(Object.fromEntries(entries));
+      })
+      .catch(() => {});
+  }, []);
+
+  if (models.length === 0) return null;
+
+  return (
+    <div className="model-overview-section">
+      <h3 className="card-title">{t('overview.perModelTitle')}</h3>
+      <div className="model-overview-grid">
+        {models.map(m => (
+          <div key={m.id} className="dash-card model-overview-card">
+            <h4 className="card-title">{m.name}</h4>
+            <span className={`model-status-badge ${m.status}`}>{m.status}</span>
+            {m.accuracy != null && (
+              <p className="card-hint">
+                {t('model.backendAccuracyLabel')}: {Math.round(m.accuracy * 1000) / 10}%
+              </p>
+            )}
+            <div className="dist-bars">
+              {(distByModel[m.id] || []).map(({ size, pct }) => (
+                <div key={size} className="dist-row">
+                  <span className="dist-size">{size}</span>
+                  <div className="dist-bar-track">
+                    <div className="dist-bar-fill" style={{ width: `${pct}%`, background: COLORS[size] || '#888' }} />
+                  </div>
+                  <span className="dist-pct">{pct} %</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ArchitectureDiagram({ isTraining, finalAccuracy, hiddenLayers, sizeLabels, compact = false }) {
+  const { t } = useTranslation('dashboard');
+  const layerLabel = { input: t('model.archInput'), dense: t('model.archDense'), output: t('model.archOutput') };
+
+  const layers = [
+    { key: 'input', units: 4 },
+    ...hiddenLayers.map(units => ({ key: 'dense', units })),
+    { key: 'output', units: sizeLabels.length },
+  ];
+
+  return (
+    <div className={`arch-diagram${compact ? ' arch-diagram--compact' : ''}`} role="img" aria-label={t('model.archTitle')}>
+      {layers.map((layer, i) => (
+        <div className="arch-layer" key={i}>
+          <div className="arch-node">
+            <span className="arch-node-units">{layer.units}</span>
+            <span className="arch-node-label">{layerLabel[layer.key]}</span>
+            {i === layers.length - 1 && finalAccuracy != null && (
+              <span className="arch-node-accuracy">{finalAccuracy}%</span>
+            )}
+          </div>
+          {i < layers.length - 1 && (
+            <div className={`arch-connector${isTraining ? ' arch-connector--active' : ''}`}>
+              <span className="arch-connector-dot" />
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const MIN_LAYERS = 1, MAX_LAYERS = 5;
+const MIN_UNITS = 8, MAX_UNITS = 2048;
+const MIN_LABELS = 2, MAX_LABELS = 12;
+const MAX_LABEL_LEN = 20;
+const DEFAULT_ARCHITECTURE = [100, 1000, 100];
+const PRESETS = {
+  balanced: DEFAULT_ARCHITECTURE,
+};
+
+function presetForArchitecture(arch) {
+  if (JSON.stringify(arch) === JSON.stringify(PRESETS.balanced)) return 'balanced';
+  return 'advanced';
+}
+
+function SizeLabelChip({ label, onRemove, removeDisabled, removeAriaLabel, dragAriaLabel }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: label });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  return (
+    <span className="size-label-chip size-label-chip--draggable" ref={setNodeRef} style={style}>
+      <button
+        type="button" className="size-label-chip-drag-handle"
+        {...attributes} {...listeners} aria-label={dragAriaLabel}
+      >
+        <FontAwesomeIcon icon={faGripVertical} />
+      </button>
+      {label}
+      <button
+        type="button" onClick={onRemove}
+        disabled={removeDisabled}
+        aria-label={removeAriaLabel}
+      >
+        <FontAwesomeIcon icon={faTrash} />
+      </button>
+    </span>
+  );
+}
+
+function ArchitectureModal({ model, onClose, onSave }) {
+  const { t } = useTranslation('dashboard');
+  const overlayRef = useRef(null);
+
+  const initialArch = model?.architecture ?? DEFAULT_ARCHITECTURE;
+  const initialLabels = model?.size_labels ?? SIZE_LABELS;
+
+  const [preset, setPreset] = useState(presetForArchitecture(initialArch));
+  const [layers, setLayers] = useState(initialArch);
+  const [labels, setLabels] = useState(initialLabels);
+  const [newLabel, setNewLabel] = useState('');
+  const [error, setError] = useState(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose(); };
+    document.addEventListener('keydown', handler);
+    document.body.style.overflow = 'hidden';
+    return () => { document.removeEventListener('keydown', handler); document.body.style.overflow = ''; };
+  }, [onClose]);
+
+  function selectPreset(name) {
+    setPreset(name);
+    if (name === 'balanced') setLayers(PRESETS.balanced);
+    // 'advanced' keeps whatever `layers` currently holds, made editable below
+  }
+
+  function updateLayerUnits(i, value) {
+    const units = Math.min(MAX_UNITS, Math.max(MIN_UNITS, parseInt(value, 10) || MIN_UNITS));
+    setLayers(prev => prev.map((u, idx) => (idx === i ? units : u)));
+  }
+
+  function addLayer() {
+    if (layers.length >= MAX_LAYERS) return;
+    setLayers(prev => [...prev, 100]);
+  }
+
+  function removeLayer(i) {
+    if (layers.length <= MIN_LAYERS) return;
+    setLayers(prev => prev.filter((_, idx) => idx !== i));
+  }
+
+  function addLabel() {
+    const trimmed = newLabel.trim().toUpperCase().slice(0, MAX_LABEL_LEN);
+    if (!trimmed || labels.length >= MAX_LABELS || labels.includes(trimmed)) return;
+    setLabels(prev => [...prev, trimmed]);
+    setNewLabel('');
+  }
+
+  function removeLabel(i) {
+    if (labels.length <= MIN_LABELS) return;
+    setLabels(prev => prev.filter((_, idx) => idx !== i));
+  }
+
+  function handleLabelDragEnd(event) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = labels.indexOf(active.id);
+    const newIndex = labels.indexOf(over.id);
+    setLabels(prev => arrayMove(prev, oldIndex, newIndex));
+  }
+
+  async function handleSave() {
+    setError(null);
+    if (layers.length < MIN_LAYERS || layers.length > MAX_LAYERS) {
+      setError(t('model.archModalTitle'));
+      return;
+    }
+    if (labels.length < MIN_LABELS || labels.length > MAX_LABELS) {
+      return;
+    }
+    setSaving(true);
+    try {
+      await onSave(layers, labels);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div
+      className="modal-backdrop"
+      ref={overlayRef}
+      onClick={e => e.target === overlayRef.current && onClose()}
+      role="dialog"
+      aria-modal="true"
+    >
+      <div className="modal-card modal-card--wide">
+        <div className="modal-header">
+          <h2 className="modal-title">{t('model.archModalTitle')}</h2>
+          <button className="modal-close-btn" onClick={onClose} aria-label={t('model.cancelBtn')}>
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
+        </div>
+
+        <div className="modal-body arch-modal-body">
+          <div className="arch-preset-group">
+            <label className={`arch-preset-option${preset === 'balanced' ? ' active' : ''}`}>
+              <input type="radio" name="arch-preset" checked={preset === 'balanced'} onChange={() => selectPreset('balanced')} />
+              {t('model.presetBalanced')}
+            </label>
+            <label className={`arch-preset-option${preset === 'advanced' ? ' active' : ''}`}>
+              <input type="radio" name="arch-preset" checked={preset === 'advanced'} onChange={() => selectPreset('advanced')} />
+              {t('model.presetAdvanced')}
+            </label>
+          </div>
+
+          {preset === 'advanced' && (
+            <div className="arch-layer-editor">
+              {layers.map((units, i) => (
+                <div className="arch-layer-row" key={i}>
+                  <div className="arch-layer-slider-group">
+                    <div className="arch-layer-slider-header">
+                      <label htmlFor={`arch-layer-slider-${i}`}>{t('model.unitsLabel')} {i + 1}</label>
+                      <span className="arch-layer-value">{units}</span>
+                    </div>
+                    <input
+                      id={`arch-layer-slider-${i}`}
+                      type="range" className="arch-layer-slider"
+                      min={MIN_UNITS} max={MAX_UNITS} step={8} value={units}
+                      onChange={e => updateLayerUnits(i, e.target.value)}
+                    />
+                  </div>
+                  <button
+                    type="button" className="btn-outline arch-layer-remove-btn"
+                    onClick={() => removeLayer(i)} disabled={layers.length <= MIN_LAYERS}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button" className="btn-outline"
+                onClick={addLayer} disabled={layers.length >= MAX_LAYERS}
+              >
+                <FontAwesomeIcon icon={faPlus} /> {t('model.addLayerBtn')}
+              </button>
+            </div>
+          )}
+
+          <h4 className="arch-title">{t('model.sizeLabelsTitle')}</h4>
+          <DndContext
+            sensors={useSensors(
+              useSensor(PointerSensor),
+              useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+            )}
+            collisionDetection={closestCenter}
+            onDragEnd={handleLabelDragEnd}
+          >
+            <SortableContext items={labels} strategy={horizontalListSortingStrategy}>
+              <div className="size-label-chips">
+                {labels.map((label, i) => (
+                  <SizeLabelChip
+                    key={label}
+                    label={label}
+                    onRemove={() => removeLabel(i)}
+                    removeDisabled={labels.length <= MIN_LABELS}
+                    removeAriaLabel={t('model.removeLayerBtn')}
+                    dragAriaLabel={t('model.dragHandleLabel')}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+          </DndContext>
+          <div className="size-label-add-row">
+            <input
+              type="text" className="text-input"
+              value={newLabel} maxLength={MAX_LABEL_LEN}
+              onChange={e => setNewLabel(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addLabel(); } }}
+            />
+            <button type="button" className="btn-outline" onClick={addLabel} disabled={labels.length >= MAX_LABELS}>
+              <FontAwesomeIcon icon={faPlus} /> {t('model.addLabelBtn')}
+            </button>
+          </div>
+
+          {error && <div className="upload-summary error">{error}</div>}
+
+          <div className="modal-actions">
+            <button type="button" className="btn-outline" onClick={onClose}>{t('model.cancelBtn')}</button>
+            <button type="button" className="btn-primary-dash" onClick={handleSave} disabled={saving}>
+              {saving ? <FontAwesomeIcon icon={faSpinner} spin /> : t('model.saveBtn')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LiveAccuracyChart({ data, epochsTotal, title, caption }) {
+  if (!data || data.length < 2) return null;
+  const w = 200, h = 60;
+  const denom = Math.max(epochsTotal - 1, 1);
+  const linePoints = data
+    .map(d => `${(d.epoch / denom) * w},${h - d.acc * h}`)
+    .join(' ');
+  const areaPoints = `0,${h} ${linePoints} ${w},${h}`;
+
+  return (
+    <div className="live-chart">
+      <p className="live-chart-title">{title}</p>
+      <svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="live-chart-svg">
+        <polygon points={areaPoints} className="live-chart-area" />
+        <polyline points={linePoints} className="live-chart-line" />
+      </svg>
+      {caption && <p className="live-chart-caption">{caption}</p>}
+    </div>
+  );
+}
+
+function ModelCard({ model, isActive, onSelect, onConfigure, onDelete, onRename }) {
+  const { t } = useTranslation('dashboard');
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: model.id });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  const architecture = model.architecture ?? [100, 1000, 100];
+  const sizeLabels = model.size_labels ?? SIZE_LABELS;
+
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [nameDraft, setNameDraft] = useState(model.name);
+
+  function startRename(e) {
+    e.stopPropagation();
+    setNameDraft(model.name);
+    setIsRenaming(true);
+  }
+
+  function commitRename() {
+    setIsRenaming(false);
+    onRename(nameDraft);
+  }
+
+  function cancelRename(e) {
+    e.stopPropagation();
+    setNameDraft(model.name);
+    setIsRenaming(false);
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`model-card${isActive ? ' model-card--active' : ''}`}
+      onClick={onSelect}
+    >
+      <div className="model-card-row">
+        <button
+          className="model-card-drag-handle" {...attributes} {...listeners}
+          onClick={e => e.stopPropagation()} aria-label={t('model.dragHandleLabel')}
+        >
+          <FontAwesomeIcon icon={faGripVertical} />
+        </button>
+        <div className="model-card-body">
+          {isRenaming ? (
+            <div className="model-card-rename-row" onClick={e => e.stopPropagation()}>
+              <input
+                type="text"
+                className="text-input model-card-rename-input"
+                value={nameDraft}
+                maxLength={120}
+                autoFocus
+                onChange={e => setNameDraft(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Enter') commitRename();
+                  if (e.key === 'Escape') cancelRename(e);
+                }}
+              />
+              <button className="model-card-rename-confirm" onClick={commitRename} aria-label={t('model.saveBtn')}>
+                <FontAwesomeIcon icon={faCheck} />
+              </button>
+              <button className="model-card-rename-cancel" onClick={cancelRename} aria-label={t('model.cancelBtn')}>
+                <FontAwesomeIcon icon={faXmark} />
+              </button>
+            </div>
+          ) : (
+            <span className="model-card-name">
+              {model.name}
+              <button className="model-card-rename-btn" onClick={startRename} aria-label={t('model.renameBtn')}>
+                <FontAwesomeIcon icon={faPen} />
+              </button>
+            </span>
+          )}
+          <span className={`model-status-badge ${model.status}`}>{model.status}</span>
+          <span className="model-card-meta">
+            {architecture.length} {t('model.layersLabel')} · {sizeLabels.length} {t('model.classesLabel')}
+          </span>
+        </div>
+        <div className="model-card-actions" onClick={e => e.stopPropagation()}>
+          <button className="btn-outline" onClick={onConfigure}><FontAwesomeIcon icon={faSliders} /> {t('model.configureBtn')}</button>
+          <button className="model-delete-btn" onClick={onDelete}><FontAwesomeIcon icon={faTrash} /> {t('model.deleteBtn')}</button>
+        </div>
+      </div>
+      <ArchitectureDiagram
+        isTraining={false}
+        finalAccuracy={model.accuracy != null ? Math.round(model.accuracy * 1000) / 10 : null}
+        hiddenLayers={architecture}
+        sizeLabels={sizeLabels}
+        compact
+      />
+    </div>
+  );
+}
+
+const EPOCHS = 201;
+
 function ModelSection({ user }) {
-  const { modelStatus, markDirty, markReady } = useModel();
   const { t } = useTranslation('dashboard');
 
   const [models, setModels]               = useState([]);
   const [activeModelId, setActiveModelId] = useState(null);
+  const [maxModels, setMaxModels]         = useState(null); // -1 = unlimited, null = not loaded yet
+  const [creatingModel, setCreatingModel] = useState(false);
+  const [modelActionError, setModelActionError] = useState(null);
+  const [localModelState, setLocalModelState] = useState('checking'); // checking | untrained | ready | error
   const [uploadedData, setUploadedData]   = useState(null);
   const [uploadedFile, setUploadedFile]   = useState(null);
   const [parseErrors, setParseErrors]     = useState([]);
@@ -123,8 +562,16 @@ function ModelSection({ user }) {
   const [trainLogs, setTrainLogs]         = useState([]);
   const [isTrained, setIsTrained]         = useState(false);
   const [includeBase, setIncludeBase]     = useState(true);
+  const [epochChart, setEpochChart]       = useState([]);
+  const [finalAccuracy, setFinalAccuracy] = useState(null);
+  const [archModalOpen, setArchModalOpen] = useState(false);
   const fileRef   = useRef(null);
   const logEndRef = useRef(null);
+
+  const modelDndSensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
 
   useEffect(() => {
     // Intentionally runs once on mount to seed the initial model list;
@@ -138,20 +585,140 @@ function ModelSection({ user }) {
         }
       })
       .catch(() => {});
+
+    apiFetch('/subscriptions/current')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data && data.plan) {
+          setMaxModels(typeof data.plan.max_models === 'number' ? data.plan.max_models : -1);
+        }
+      })
+      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function ensureModel() {
-    if (activeModelId) return activeModelId;
-    const res = await apiFetch('/models', {
-      method: 'POST',
-      body: JSON.stringify({ name: `${user.brand || 'My Brand'} Model` }),
+  // Independent of the app-wide useModel() context: this checks whether THIS
+  // specific model has locally-trained TF.js weights in THIS browser, reset
+  // every time the selected model changes so no stale run bleeds through.
+  useEffect(() => {
+    let cancelled = false;
+    setLocalModelState('checking');
+    setEpochChart([]);
+    setFinalAccuracy(null);
+    setTrainProgress(0);
+    setTrainLogs([]);
+    setIsTrained(false);
+    setModelActionError(null);
+
+    if (!activeModelId) {
+      setLocalModelState('untrained');
+      return undefined;
+    }
+    tf.loadLayersModel(getModelStorageKey(activeModelId))
+      .then(() => { if (!cancelled) setLocalModelState('ready'); })
+      .catch(() => { if (!cancelled) setLocalModelState('untrained'); });
+
+    return () => { cancelled = true; };
+  }, [activeModelId]);
+
+  const atLimit = maxModels != null && maxModels !== -1 && models.length >= maxModels;
+  const activeModel = models.find(m => m.id === activeModelId);
+  const effectiveArchitecture = activeModel?.architecture ?? [100, 1000, 100];
+  const effectiveSizeLabels = activeModel?.size_labels ?? SIZE_LABELS;
+  const combineBaseDisabled = JSON.stringify(effectiveSizeLabels) !== JSON.stringify(SIZE_LABELS);
+
+  async function handleDeleteModel(modelId = activeModelId) {
+    if (!modelId) return;
+    if (!window.confirm(t('model.deleteConfirm'))) return;
+    await apiFetch(`/models/${modelId}`, { method: 'DELETE' });
+    await tf.io.removeModel(getModelStorageKey(modelId)).catch(() => {});
+    setModels(prev => {
+      const next = prev.filter(m => m.id !== modelId);
+      if (modelId === activeModelId) setActiveModelId(next.length > 0 ? next[0].id : null);
+      return next;
     });
-    if (!res.ok) return null;
-    const newModel = await res.json();
-    setModels(prev => [newModel, ...prev]);
-    setActiveModelId(newModel.id);
-    return newModel.id;
+  }
+
+  async function handleSaveArchitecture(newArch, newLabels, modelId = activeModelId) {
+    setModelActionError(null);
+    const targetModel = models.find(m => m.id === modelId);
+    const wasTrained = targetModel?.status && targetModel.status !== 'untrained';
+    if (wasTrained && !window.confirm(t('model.archChangeConfirm'))) return;
+    const res = await apiFetch(`/models/${modelId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ architecture: newArch, size_labels: newLabels }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setModels(prev => prev.map(m => (m.id === updated.id ? updated : m)));
+      if (wasTrained) {
+        await tf.io.removeModel(getModelStorageKey(modelId)).catch(() => {});
+        setLocalModelState('untrained');
+        setFinalAccuracy(null);
+        setEpochChart([]);
+      }
+      setArchModalOpen(false);
+    } else {
+      const body = await res.json().catch(() => ({}));
+      setModelActionError(body.message || t('model.createErrorFallback'));
+    }
+  }
+
+  async function handleRenameModel(modelId, newName) {
+    const trimmed = newName.trim();
+    const target = models.find(m => m.id === modelId);
+    if (!trimmed || !target || trimmed === target.name) return;
+    const res = await apiFetch(`/models/${modelId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name: trimmed }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setModels(prev => prev.map(m => (m.id === updated.id ? updated : m)));
+    } else {
+      const body = await res.json().catch(() => ({}));
+      setModelActionError(body.message || t('model.createErrorFallback'));
+    }
+  }
+
+  async function handleModelDragEnd(event) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = models.findIndex(m => m.id === active.id);
+    const newIndex = models.findIndex(m => m.id === over.id);
+    const reordered = arrayMove(models, oldIndex, newIndex);
+    setModels(reordered); // optimistic
+    const res = await apiFetch('/models/reorder', {
+      method: 'PATCH',
+      body: JSON.stringify({ modelIds: reordered.map(m => m.id) }),
+    });
+    if (!res.ok) {
+      setModels(models); // revert to pre-drag order
+      setModelActionError(t('model.reorderError'));
+    }
+  }
+
+  async function createNewModel() {
+    setModelActionError(null);
+    setCreatingModel(true);
+    try {
+      const res = await apiFetch('/models', {
+        method: 'POST',
+        body: JSON.stringify({ name: `Model ${models.length + 1}` }),
+      });
+      if (res.ok) {
+        const newModel = await res.json();
+        setModels(prev => [newModel, ...prev]);
+        setActiveModelId(newModel.id);
+      } else {
+        const body = await res.json().catch(() => ({}));
+        setModelActionError(body.message || t('model.createErrorFallback'));
+      }
+    } catch {
+      setModelActionError(t('model.createErrorFallback'));
+    } finally {
+      setCreatingModel(false);
+    }
   }
 
   function addLog(type, text) {
@@ -172,32 +739,39 @@ function ModelSection({ user }) {
   }
 
   async function handleTrain() {
-    if (!uploadedData) return;
+    if (!uploadedData || !activeModelId) return;
     setIsTraining(true);
     setIsTrained(false);
     setTrainProgress(0);
     setTrainLogs([]);
-    markDirty();
+    setEpochChart([]);
+    setFinalAccuracy(null);
 
-    const inputData = includeBase
+    const useBase = includeBase && !combineBaseDisabled;
+    const inputData = useBase
       ? [...DEFAULT_INPUT_DATA, ...uploadedData.inputData]
       : uploadedData.inputData;
-    const labels = includeBase
+    const labels = useBase
       ? [...DEFAULT_LABELS, ...uploadedData.labels]
       : uploadedData.labels;
 
-    const EPOCHS = 201;
     const start  = Date.now();
     addLog('info', t('model.logStart', { count: inputData.length }));
 
     try {
       const result = await trainModel({
-        inputData, labels, epochs: EPOCHS,
-        onEpoch: (epoch, { loss }) => {
+        inputData, labels, epochs: EPOCHS, modelId: activeModelId,
+        hiddenLayers: effectiveArchitecture, sizeLabels: effectiveSizeLabels,
+        onEpoch: (epoch, logs) => {
           setTrainProgress(Math.round(((epoch + 1) / EPOCHS) * 100));
+          const accKey = Object.keys(logs).find(k => k.toLowerCase().includes('acc'));
+          const acc = accKey ? logs[accKey] : null;
+          if (acc != null) {
+            setEpochChart(prev => [...prev, { epoch, loss: logs.loss, acc }]);
+          }
           if (epoch === 0) addLog('start', t('model.logTraining'));
           if (epoch % 50 === 0 && epoch > 0)
-            addLog('epoch', t('model.logEpoch', { epoch, total: EPOCHS - 1, loss: loss.toFixed(6) }));
+            addLog('epoch', t('model.logEpoch', { epoch, total: EPOCHS - 1, loss: logs.loss.toFixed(6) }));
         },
       });
 
@@ -209,25 +783,44 @@ function ModelSection({ user }) {
       addLog('success', t('model.logComplete', { acc }));
       addLog('success', t('model.logSaved'));
       setIsTrained(true);
-      markReady();
+      setFinalAccuracy(acc);
+      setLocalModelState('ready');
 
-      const modelId = await ensureModel();
-      if (modelId && uploadedFile) {
+      if (uploadedFile) {
         const formData = new FormData();
         formData.append('file', uploadedFile);
         formData.append('accuracy', String(acc / 100));
         formData.append('samples_count', String(inputData.length));
         formData.append('epochs', String(EPOCHS));
         formData.append('duration_seconds', String(durationSecs));
-        await apiFetch(`/models/${modelId}/train`, {
+        await apiFetch(`/models/${activeModelId}/train`, {
           method: 'POST',
           headers: {},
           body: formData,
         });
-        addLog('success', 'Training session recorded in backend.');
+        addLog('success', t('model.logRecorded'));
+        setModels(prev => prev.map(m => (
+          m.id === activeModelId
+            ? { ...m, status: 'ready', accuracy: acc / 100, samples_count: inputData.length }
+            : m
+        )));
+
+        try {
+          const trainedModel = await tf.loadLayersModel(getModelStorageKey(activeModelId));
+          const tokens = JSON.parse(sessionStorage.getItem('usize_tokens') || 'null');
+          await trainedModel.save(tf.io.http(`/api/v1/models/${activeModelId}/weights`, {
+            requestInit: {
+              headers: tokens?.access_token ? { Authorization: `Bearer ${tokens.access_token}` } : {},
+            },
+          }));
+          addLog('success', t('model.logHosted'));
+        } catch {
+          addLog('info', t('model.logHostFailed'));
+        }
       }
     } catch (err) {
       addLog('error', t('model.logError', { msg: err.message }));
+      setLocalModelState('error');
     } finally {
       setIsTraining(false);
       setTrainProgress(100);
@@ -235,55 +828,118 @@ function ModelSection({ user }) {
   }
 
   function statusIcon() {
-    if (modelStatus === 'ready')  return <FontAwesomeIcon icon={faCircleCheck} />;
-    if (modelStatus === 'error')  return <FontAwesomeIcon icon={faCircleXmark} />;
+    if (localModelState === 'ready')     return <FontAwesomeIcon icon={faCircleCheck} />;
+    if (localModelState === 'error')     return <FontAwesomeIcon icon={faCircleXmark} />;
+    if (localModelState === 'untrained') return <FontAwesomeIcon icon={faCircleXmark} />;
     return <FontAwesomeIcon icon={faSpinner} spin />;
   }
   function statusLabel() {
-    if (modelStatus === 'ready')        return t('model.statusReady');
-    if (modelStatus === 'initializing') return t('model.statusInitializing');
-    if (modelStatus === 'checking')     return t('model.statusChecking');
+    if (localModelState === 'ready')     return t('model.statusReady');
+    if (localModelState === 'untrained') return t('model.statusUntrained');
+    if (localModelState === 'checking')  return t('model.statusChecking');
     return t('model.statusError');
   }
 
-  const activeModel = models.find(m => m.id === activeModelId);
+  const lastEpochPoint = epochChart[epochChart.length - 1];
 
   return (
     <div className="section-content">
       <div className="cards-row">
         <div className="dash-card">
           <h3 className="card-title">{t('model.statusTitle')}</h3>
-          <div className={`model-status-badge ${modelStatus}`}>
+          <div className={`model-status-badge ${localModelState}`}>
             {statusIcon()} {statusLabel()}
           </div>
           <dl className="model-meta">
             <div><dt>{t('model.metaPlan')}</dt><dd>{user.plan}</dd></div>
             <div><dt>{t('model.metaBrand')}</dt><dd>{user.brand_name || user.brand || '—'}</dd></div>
             <div><dt>{t('model.metaInputs')}</dt><dd>espalda · altura · peso · edad</dd></div>
-            <div><dt>{t('model.metaArch')}</dt><dd>{`4 → 100 → 1000 → 100 → ${SIZE_LABELS.length}`}</dd></div>
           </dl>
-          {models.length > 0 && (
-            <div style={{ marginTop: 12 }}>
-              <label style={{ fontSize: '0.8rem', opacity: 0.7, display: 'block', marginBottom: 4 }}>
-                Active model
-              </label>
-              <select
-                style={{ width: '100%', padding: '4px 8px', borderRadius: 6, border: '1px solid var(--color-border)' }}
-                value={activeModelId || ''}
-                onChange={e => setActiveModelId(e.target.value)}
-              >
-                {models.map(m => (
-                  <option key={m.id} value={m.id}>{m.name} ({m.status})</option>
-                ))}
-              </select>
+
+          <div className="model-list-header">
+            <span className="model-list-label">
+              {t('model.activeModelLabel')}
+            </span>
+            {maxModels != null && (
+              <span className="model-count-badge">
+                {t('model.modelsCount', {
+                  count: models.length,
+                  max: maxModels === -1 ? t('model.modelsUnlimited') : maxModels,
+                })}
+              </span>
+            )}
+          </div>
+
+          {models.length > 0 ? (
+            <DndContext
+              sensors={modelDndSensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleModelDragEnd}
+            >
+              <SortableContext items={models.map(m => m.id)} strategy={verticalListSortingStrategy}>
+                <div className="model-card-grid">
+                  {models.map(m => (
+                    <ModelCard
+                      key={m.id}
+                      model={m}
+                      isActive={m.id === activeModelId}
+                      onSelect={() => setActiveModelId(m.id)}
+                      onConfigure={() => { setActiveModelId(m.id); setArchModalOpen(true); }}
+                      onDelete={() => handleDeleteModel(m.id)}
+                      onRename={(newName) => handleRenameModel(m.id, newName)}
+                    />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext>
+          ) : (
+            <p className="card-hint">{t('model.noModelsYet')}</p>
+          )}
+
+          <div className="model-actions-row">
+            <button
+              className="btn-outline model-new-btn"
+              onClick={createNewModel}
+              disabled={atLimit || creatingModel}
+              title={atLimit ? t('model.limitReachedHint') : undefined}
+            >
+              {creatingModel
+                ? <FontAwesomeIcon icon={faSpinner} spin />
+                : <FontAwesomeIcon icon={faPlus} />
+              } {t('model.newModelBtn')}
+            </button>
+          </div>
+
+          {atLimit && (
+            <p className="upload-summary error model-limit-msg">
+              {t('model.limitReached')}{' '}
+              <Link to="/pricing">{t('model.limitReachedHint')}</Link>
+            </p>
+          )}
+          {modelActionError && (
+            <p className="upload-summary error">{modelActionError}</p>
+          )}
+
+          {activeModel && activeModel.accuracy != null && (
+            <div className="model-backend-accuracy">
+              {t('model.backendAccuracyLabel')}: {Math.round(activeModel.accuracy * 1000) / 10}%
+              · {activeModel.samples_count} {t('model.samplesLabel')}
             </div>
           )}
-          {activeModel && activeModel.accuracy && (
-            <div style={{ marginTop: 8, fontSize: '0.8rem', opacity: 0.7 }}>
-              Backend accuracy: {Math.round(activeModel.accuracy * 1000) / 10}%
-              · {activeModel.samples_count} samples
-            </div>
+
+          {localModelState === 'untrained' && activeModelId && (
+            <p className="upload-summary" style={{ background: 'rgba(245,158,11,.1)', border: '1px solid rgba(245,158,11,.25)', color: '#f59e0b' }}>
+              {t('model.untrainedLocal')}
+            </p>
           )}
+
+          <h4 className="arch-title">{t('model.archTitle')}</h4>
+          <ArchitectureDiagram
+            isTraining={isTraining}
+            finalAccuracy={finalAccuracy}
+            hiddenLayers={effectiveArchitecture}
+            sizeLabels={effectiveSizeLabels}
+          />
         </div>
 
         <div className="dash-card flex-grow">
@@ -314,15 +970,25 @@ function ModelSection({ user }) {
           )}
 
           {uploadedData && (
-            <label className="checkbox-label">
-              <input type="checkbox" checked={includeBase}
-                onChange={e => setIncludeBase(e.target.checked)} />
-              {t('model.combineBase', { count: DEFAULT_INPUT_DATA.length })}
-            </label>
+            <>
+              <label className="checkbox-label">
+                <input type="checkbox" checked={includeBase && !combineBaseDisabled}
+                  disabled={combineBaseDisabled}
+                  onChange={e => setIncludeBase(e.target.checked)} />
+                {t('model.combineBase', { count: DEFAULT_INPUT_DATA.length })}
+              </label>
+              {combineBaseDisabled && (
+                <p className="card-hint">{t('model.combineBaseDisabledHint')}</p>
+              )}
+            </>
+          )}
+
+          {uploadedData && !activeModelId && (
+            <div className="upload-summary error">{t('model.selectModelFirst')}</div>
           )}
 
           {uploadedData && (
-            <button className="btn-primary-dash" onClick={handleTrain} disabled={isTraining}>
+            <button className="btn-primary-dash" onClick={handleTrain} disabled={isTraining || !activeModelId}>
               {isTraining
                 ? <><FontAwesomeIcon icon={faSpinner} spin /> {t('model.training')}</>
                 : <><FontAwesomeIcon icon={faPlay} /> {t('model.trainBtn')}</>
@@ -337,6 +1003,17 @@ function ModelSection({ user }) {
             </div>
           )}
 
+          <LiveAccuracyChart
+            data={epochChart}
+            epochsTotal={EPOCHS}
+            title={t('model.liveChartTitle')}
+            caption={lastEpochPoint ? t('model.liveEpoch', {
+              epoch: lastEpochPoint.epoch + 1,
+              total: EPOCHS,
+              acc: Math.round(lastEpochPoint.acc * 100),
+            }) : null}
+          />
+
           {trainLogs.length > 0 && (
             <div className="training-log">
               {trainLogs.map((l, i) => (
@@ -347,6 +1024,14 @@ function ModelSection({ user }) {
           )}
         </div>
       </div>
+
+      {archModalOpen && (
+        <ArchitectureModal
+          model={activeModel}
+          onClose={() => setArchModalOpen(false)}
+          onSave={handleSaveArchitecture}
+        />
+      )}
     </div>
   );
 }
@@ -354,6 +1039,7 @@ function ModelSection({ user }) {
 function IntegrationSection({ user }) {
   const { t } = useTranslation('dashboard');
   const [apiKeys, setApiKeys]       = useState([]);
+  const [models, setModels]         = useState([]);
   const [generating, setGenerating] = useState(false);
   const [newKey, setNewKey]         = useState(null);
   const [copied, setCopied]         = useState(false);
@@ -364,7 +1050,23 @@ function IntegrationSection({ user }) {
       .then(r => r.ok ? r.json() : [])
       .then(data => { if (Array.isArray(data)) setApiKeys(data); })
       .catch(() => {});
+
+    apiFetch('/models')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => { if (Array.isArray(data)) setModels(data); })
+      .catch(() => {});
   }, []);
+
+  async function handleAssignModel(keyId, modelId) {
+    const res = await apiFetch(`/api-keys/${keyId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ model_id: modelId }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setApiKeys(prev => prev.map(k => (k.id === updated.id ? updated : k)));
+    }
+  }
 
   const displayKey = newKey?.key || (apiKeys[0] ? `${apiKeys[0].key_prefix}••••••••••••` : user.apiKey || '—');
 
@@ -391,7 +1093,10 @@ function IntegrationSection({ user }) {
       if (res.ok) {
         const data = await res.json();
         setNewKey(data);
-        setApiKeys(prev => [{ id: data.id, key_prefix: data.key_prefix, is_active: true, created_at: new Date().toISOString() }, ...prev]);
+        setApiKeys(prev => [{
+          id: data.id, key_prefix: data.key_prefix, is_active: true, created_at: new Date().toISOString(),
+          model_id: data.model_id ?? null, brand_color: data.brand_color ?? null, button_text: data.button_text ?? null,
+        }, ...prev]);
       }
     } finally {
       setGenerating(false);
@@ -450,11 +1155,24 @@ function IntegrationSection({ user }) {
             <div style={{ marginTop: 12 }}>
               <p style={{ fontSize: '0.75rem', opacity: 0.7, marginBottom: 4 }}>Your keys:</p>
               {apiKeys.map(k => (
-                <div key={k.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', marginBottom: 4 }}>
-                  <code>{k.key_prefix}••••</code>
-                  <button onClick={() => revokeKey(k.id)} style={{ background: 'none', border: 'none', color: 'var(--color-danger, #ef4444)', cursor: 'pointer', fontSize: '0.75rem' }}>
-                    Revoke
-                  </button>
+                <div key={k.id} className="api-key-row-item">
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
+                    <code>{k.key_prefix}••••</code>
+                    <button onClick={() => revokeKey(k.id)} style={{ background: 'none', border: 'none', color: 'var(--color-danger, #ef4444)', cursor: 'pointer', fontSize: '0.75rem' }}>
+                      Revoke
+                    </button>
+                  </div>
+                  <label className="api-key-model-assign">
+                    <span>{t('integration.assignModelLabel')}</span>
+                    <select
+                      className="select-input"
+                      value={k.model_id || ''}
+                      onChange={e => handleAssignModel(k.id, e.target.value || null)}
+                    >
+                      <option value="">{t('integration.autoModelOption')}</option>
+                      {models.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                    </select>
+                  </label>
                 </div>
               ))}
             </div>
@@ -486,52 +1204,211 @@ function IntegrationSection({ user }) {
   );
 }
 
-function CustomizationSection() {
+const DEFAULT_BRAND_COLOR = '#53a0f8';
+const DEFAULT_BTN_TEXT = '¿Cuál es mi talla?';
+
+const BRAND_COLOR_SWATCHES = ['#53a0f8', '#e63946', '#5db35d', '#f59e0b', '#a855f7', '#ef4444', '#0ea5e9', '#1f2937'];
+const HEX_COLOR_REGEX = /^#[0-9a-fA-F]{6}$/;
+
+function ApiKeyBrandingCard({ apiKey, models, onSave }) {
   const { t } = useTranslation('dashboard');
-  const [color,  setColor]  = useState('#53a0f8');
-  const [btnText, setBtnText] = useState('¿Cuál es mi talla?');
+  const savedColor = apiKey.brand_color || DEFAULT_BRAND_COLOR;
+  const savedBtnText = apiKey.button_text || DEFAULT_BTN_TEXT;
+  const [color, setColor]     = useState(savedColor);
+  const [hexDraft, setHexDraft] = useState(savedColor);
+  const [btnText, setBtnText] = useState(savedBtnText);
+  const [saving, setSaving]   = useState(false);
+  const [saved, setSaved]     = useState(false);
+
+  const isDirty = color !== savedColor || btnText !== savedBtnText;
+  const assignedModel = models.find(m => m.id === apiKey.model_id);
+  const modelLabel = apiKey.model_id
+    ? (assignedModel?.name || t('customization.modelNotFound'))
+    : t('integration.autoModelOption');
+
+  function pickColor(newColor) {
+    setColor(newColor);
+    setHexDraft(newColor);
+  }
+
+  function handleHexChange(value) {
+    const normalized = value.startsWith('#') ? value : `#${value}`;
+    setHexDraft(normalized);
+    if (HEX_COLOR_REGEX.test(normalized)) setColor(normalized);
+  }
+
+  function handleHexBlur() {
+    if (!HEX_COLOR_REGEX.test(hexDraft)) setHexDraft(color);
+  }
+
+  async function handleSave() {
+    setSaving(true);
+    setSaved(false);
+    try {
+      const ok = await onSave(apiKey.id, color, btnText);
+      if (ok) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2500);
+      }
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <div className="dash-card branding-card">
+      <div className="branding-card-header">
+        <span className="branding-card-icon"><FontAwesomeIcon icon={faKey} /></span>
+        <div>
+          <h3 className="card-title">{t('customization.keyCardTitle')}</h3>
+          <code className="branding-card-prefix">{apiKey.key_prefix}••••</code>
+        </div>
+      </div>
+
+      <span className="branding-model-badge">
+        <FontAwesomeIcon icon={faBrain} /> {modelLabel}
+      </span>
+
+      <div className="custom-field">
+        <label>{t('customization.colorLabel')}</label>
+        <div className="color-row">
+          <input type="color" value={color} onChange={e => pickColor(e.target.value)} />
+          <input
+            type="text"
+            className="text-input color-hex-input"
+            value={hexDraft}
+            maxLength={7}
+            spellCheck={false}
+            onChange={e => handleHexChange(e.target.value)}
+            onBlur={handleHexBlur}
+            aria-label={t('customization.colorLabel')}
+          />
+        </div>
+        <div className="color-swatch-row">
+          {BRAND_COLOR_SWATCHES.map(swatch => (
+            <button
+              key={swatch}
+              type="button"
+              className={`color-swatch${color.toLowerCase() === swatch ? ' color-swatch--active' : ''}`}
+              style={{ background: swatch }}
+              onClick={() => pickColor(swatch)}
+              aria-label={swatch}
+            />
+          ))}
+        </div>
+      </div>
+
+      <div className="custom-field">
+        <div className="custom-field-label-row">
+          <label>{t('customization.btnLabel')}</label>
+          <span className="char-counter">{btnText.length}/60</span>
+        </div>
+        <input type="text" className="text-input" value={btnText}
+          onChange={e => setBtnText(e.target.value)} maxLength={60} />
+      </div>
+
+      <div className="branding-save-row">
+        <button className="btn-primary-dash" onClick={handleSave} disabled={saving || !isDirty}>
+          {saving
+            ? <FontAwesomeIcon icon={faSpinner} spin />
+            : saved
+              ? <><FontAwesomeIcon icon={faCheck} /> {t('customization.savedBtn')}</>
+              : t('customization.saveBtn')
+          }
+        </button>
+        {isDirty && !saving && <span className="unsaved-hint">{t('customization.unsavedHint')}</span>}
+      </div>
+
+      <p className="card-hint preview-label">{t('customization.previewHint')}</p>
+      <div className="preview-mockup">
+        <div className="preview-product-img"><FontAwesomeIcon icon={faShirt} /></div>
+        <div className="preview-info">
+          <div className="preview-line w60" />
+          <div className="preview-line w40" />
+          <button className="preview-cta" style={{ background: color, borderColor: color }}>
+            {btnText || DEFAULT_BTN_TEXT}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CustomizationSection({ user }) {
+  const { t } = useTranslation('dashboard');
+  const [apiKeys, setApiKeys] = useState([]);
+  const [models, setModels]   = useState([]);
+  const [loaded, setLoaded]   = useState(false);
+
+  const eligible = (user?.plan || '').toLowerCase() !== 'starter';
+
+  useEffect(() => {
+    if (!eligible) { setLoaded(true); return; }
+    Promise.all([
+      apiFetch('/api-keys').then(r => r.ok ? r.json() : []),
+      apiFetch('/models').then(r => r.ok ? r.json() : []),
+    ])
+      .then(([keysData, modelsData]) => {
+        if (Array.isArray(keysData)) setApiKeys(keysData);
+        if (Array.isArray(modelsData)) setModels(modelsData);
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [eligible]);
+
+  async function handleSaveBranding(keyId, brandColor, buttonText) {
+    const res = await apiFetch(`/api-keys/${keyId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ brand_color: brandColor, button_text: buttonText }),
+    });
+    if (res.ok) {
+      const updated = await res.json();
+      setApiKeys(prev => prev.map(k => (k.id === updated.id ? updated : k)));
+      return true;
+    }
+    return false;
+  }
+
+  if (!eligible) {
+    return (
+      <div className="section-content">
+        <div className="dash-card">
+          <h3 className="card-title">{t('customization.upsellTitle')}</h3>
+          <p className="card-desc">{t('customization.upsellDesc')}</p>
+          <p className="upload-summary error model-limit-msg" style={{ display: 'inline-block' }}>
+            <Link to="/pricing">{t('model.limitReachedHint')}</Link>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!loaded) {
+    return <div className="section-content"><p className="card-hint">…</p></div>;
+  }
+
+  if (apiKeys.length === 0) {
+    return (
+      <div className="section-content">
+        <div className="dash-card">
+          <h3 className="card-title">{t('customization.title')}</h3>
+          <p className="card-hint">{t('customization.noKeysHint')}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="section-content">
-      <div className="cards-row">
-        <div className="dash-card">
-          <h3 className="card-title">{t('customization.title')}</h3>
-
-          <div className="custom-field">
-            <label>{t('customization.colorLabel')}</label>
-            <div className="color-row">
-              <input type="color" value={color} onChange={e => setColor(e.target.value)} />
-              <code>{color}</code>
-            </div>
-          </div>
-
-          <div className="custom-field">
-            <label>{t('customization.btnLabel')}</label>
-            <input type="text" className="text-input" value={btnText}
-              onChange={e => setBtnText(e.target.value)} maxLength={60} />
-          </div>
-
-          <button className="btn-primary-dash" onClick={() => {}}>
-            {t('customization.saveBtn')}
-          </button>
-        </div>
-
-        <div className="dash-card">
-          <h3 className="card-title">{t('customization.previewTitle')}</h3>
-          <div className="preview-mockup">
-            <div className="preview-product-img" />
-            <div className="preview-info">
-              <div className="preview-line w60" />
-              <div className="preview-line w40" />
-              <button className="preview-cta" style={{ background: color, borderColor: color }}>
-                {btnText}
-              </button>
-            </div>
-          </div>
-          <p className="card-hint" style={{ marginTop: 12 }}>
-            {t('customization.previewHint')}
-          </p>
-        </div>
+      <div className="section-heading">
+        <h2 className="card-title">{t('customization.title')}</h2>
+        <p className="card-desc">{t('customization.sectionDesc')}</p>
+      </div>
+      <div className="branding-card-grid">
+        {apiKeys.map(k => (
+          <ApiKeyBrandingCard key={k.id} apiKey={k} models={models} onSave={handleSaveBranding} />
+        ))}
       </div>
     </div>
   );
@@ -866,11 +1743,12 @@ export default function DashboardPage() {
             <>
               <StatCards />
               <SizeDistChart />
+              <PerModelOverview />
             </>
           )}
           {activeTab === 'model'         && <ModelSection user={user} />}
           {activeTab === 'integration'   && <IntegrationSection user={user} />}
-          {activeTab === 'customization' && <CustomizationSection />}
+          {activeTab === 'customization' && <CustomizationSection user={user} />}
           {activeTab === 'team'          && <TeamSection user={user} />}
         </div>
       </main>

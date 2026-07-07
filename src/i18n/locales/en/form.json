@@ -13,6 +13,8 @@
   "tryAgain": "Try again",
   "errorModel": "Error loading the model. Make sure it has been trained.",
   "initializing": "Training base model, this takes a few seconds…",
+  "requiredHint": "This field is required",
+  "privacyNote": "Your measurements are processed in your browser and never sent to a server.",
   "meter": {
     "tight": "Tight",
     "perfect": "Perfect fit",

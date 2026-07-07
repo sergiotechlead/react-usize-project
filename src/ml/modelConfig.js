@@ -88,14 +88,24 @@ const SIZE_ALIASES = { '2XL': 'XXL', '2X': 'XXL', 'XXLARGE': 'XXL', 'XLARGE': 'X
 // v2 key — forces re-train when users had the old 4-class model cached
 export const MODEL_KEY = 'localstorage://usize-model-v2';
 
-export function buildModel() {
-  const numClasses = SIZE_LABELS.length;
+// Per-model browser storage key, used by the dashboard's multi-model support so
+// each backend `Model` row gets its own local TF.js weights instead of sharing
+// the single global MODEL_KEY. Falls back to MODEL_KEY when no modelId is given
+// (the public Home-page demo widget / ModelContext.js keep using that path).
+export function getModelStorageKey(modelId) {
+  return modelId ? `localstorage://usize-model-${modelId}` : MODEL_KEY;
+}
+
+export function buildModel(hiddenLayers = [100, 1000, 100], sizeLabels = SIZE_LABELS) {
+  const numClasses = sizeLabels.length;
   const model = tf.sequential({
     layers: [
-      tf.layers.dense({ inputShape: [4], units: 100,        activation: 'relu' }),
-      tf.layers.dense({                  units: 1000,       activation: 'relu' }),
-      tf.layers.dense({                  units: 100,        activation: 'relu' }),
-      tf.layers.dense({                  units: numClasses, activation: 'softmax' }),
+      ...hiddenLayers.map((units, i) => tf.layers.dense(
+        i === 0
+          ? { inputShape: [4], units, activation: 'relu' }
+          : { units, activation: 'relu' }
+      )),
+      tf.layers.dense({ units: numClasses, activation: 'softmax' }),
     ],
   });
   model.compile({
@@ -106,15 +116,17 @@ export function buildModel() {
   return model;
 }
 
-export async function trainModel({ inputData, labels, epochs = 201, onEpoch } = {}) {
+export async function trainModel({
+  inputData, labels, epochs = 201, onEpoch, modelId, hiddenLayers, sizeLabels,
+} = {}) {
   const data    = inputData ?? DEFAULT_INPUT_DATA;
   const targets = labels    ?? DEFAULT_LABELS;
-  const numClasses = SIZE_LABELS.length;
+  const numClasses = (sizeLabels ?? SIZE_LABELS).length;
 
   const xs = data.map(r => [r[0] / 200, r[1] / 250, r[2] / 250, r[3] / 100]);
   const inputTensor  = tf.tensor(xs,      [xs.length,      4]);
   const outputTensor = tf.tensor(targets, [targets.length, numClasses]);
-  const model = buildModel();
+  const model = buildModel(hiddenLayers, sizeLabels);
 
   const result = await model.fit(inputTensor, outputTensor, {
     epochs,
@@ -129,32 +141,35 @@ export async function trainModel({ inputData, labels, epochs = 201, onEpoch } = 
       : undefined,
   });
 
-  await model.save(MODEL_KEY);
+  await model.save(getModelStorageKey(modelId));
   tf.dispose([inputTensor, outputTensor]);
   return result;
 }
 
-export async function predictSize(back, height, weight, age) {
-  const model  = await tf.loadLayersModel(MODEL_KEY);
+export async function predictSize(back, height, weight, age, modelId, sizeLabels = SIZE_LABELS) {
+  const model  = await tf.loadLayersModel(getModelStorageKey(modelId));
   const input  = tf.tensor([[back / 200, height / 250, weight / 250, age / 100]], [1, 4]);
   const output = model.predict(input);
   const values = Array.from(output.dataSync()).map(v => Math.round(v * 100) / 100);
   const maxIndex = values.indexOf(Math.max(...values));
   tf.dispose([input, output]);
-  return SIZE_LABELS[maxIndex] ?? 'M';
+  return sizeLabels[maxIndex] ?? 'M';
 }
 
-export function parseExcelRows(rows) {
+export function parseExcelRows(rows, sizeLabels = SIZE_LABELS) {
   const inputData = [];
   const labels    = [];
   const errors    = [];
+  const sizeMap = Object.fromEntries(
+    sizeLabels.map((label, i) => [label, sizeLabels.map((_, j) => (j === i ? 1 : 0))])
+  );
 
   rows.forEach((row, i) => {
     const raw  = String(row.talla ?? row.Talla ?? row.TALLA ?? '').trim().toUpperCase();
     const size = SIZE_ALIASES[raw] || raw;
 
-    if (!SIZE_MAP[size]) {
-      const valid = SIZE_LABELS.join(', ');
+    if (!sizeMap[size]) {
+      const valid = sizeLabels.join(', ');
       errors.push(`Fila ${i + 2}: talla inválida "${raw}" — válidas: ${valid}`);
       return;
     }
@@ -169,7 +184,7 @@ export function parseExcelRows(rows) {
       return;
     }
     inputData.push([back, height, weight, age]);
-    labels.push(SIZE_MAP[size]);
+    labels.push(sizeMap[size]);
   });
 
   return { inputData, labels, errors };

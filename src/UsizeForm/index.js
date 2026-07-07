@@ -1,11 +1,21 @@
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faSpinner, faRulerCombined } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowLeft, faSpinner, faRulerCombined,
+  faRulerHorizontal, faRulerVertical, faWeightScale, faCalendarDays, faShieldHalved,
+} from '@fortawesome/free-solid-svg-icons';
 import { useTranslation } from 'react-i18next';
 import { useModel } from '../context/ModelContext';
 import { predictSize, SIZE_POSITIONS } from '../ml/modelConfig';
 import svg from './up-arrow.min.svg';
 import './UsizeForm.css';
+
+const FIELDS = [
+  { id: 'espalda', labelKey: 'back',   icon: faRulerHorizontal, unit: 'cm', placeholder: '42' },
+  { id: 'altura',  labelKey: 'height', icon: faRulerVertical,   unit: 'cm', placeholder: '170' },
+  { id: 'peso',    labelKey: 'weight', icon: faWeightScale,     unit: 'kg', placeholder: '70' },
+  { id: 'edad',    labelKey: 'age',    icon: faCalendarDays,    unit: 'ageUnit', placeholder: '28' },
+];
 
 function SizeMeter({ size }) {
   const { t } = useTranslation('form');
@@ -48,19 +58,65 @@ function SizeResult({ size, onBack }) {
   );
 }
 
+function FieldInput({ field, value, onChange, touched, onBlur }) {
+  const { t } = useTranslation('form');
+  const isInvalid = touched && value === '';
+  const unitLabel = field.unit === 'ageUnit' ? t('ageUnit') : field.unit;
+
+  return (
+    <div className={`field-group${isInvalid ? ' field-group--invalid' : ''}`}>
+      <label className="field-label" htmlFor={field.id}>
+        <FontAwesomeIcon icon={field.icon} className="field-label-icon" />
+        {t(field.labelKey)}
+      </label>
+      <div className="field-input-wrap">
+        <input
+          id={field.id} type="number" name={field.id} className="field-input"
+          placeholder={field.placeholder}
+          value={value}
+          onChange={e => onChange(field.id, e.target.value)}
+          onBlur={() => onBlur(field.id)}
+          required
+        />
+        {unitLabel && <span className="field-unit">{unitLabel}</span>}
+      </div>
+      {isInvalid && (
+        <span className="field-error-hint">{t('requiredHint')}</span>
+      )}
+    </div>
+  );
+}
+
 function UsizeForm() {
   const { modelStatus } = useModel();
   const { t } = useTranslation('form');
   const [step, setStep] = useState('form');
   const [predictedSize, setPredictedSize] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
+  const [values, setValues] = useState({ espalda: '', altura: '', peso: '', edad: '' });
+  const [touched, setTouched] = useState({});
+
+  function handleFieldChange(id, value) {
+    setValues(prev => ({ ...prev, [id]: value }));
+  }
+
+  function handleFieldBlur(id) {
+    setTouched(prev => ({ ...prev, [id]: true }));
+  }
+
+  function isFormValid() {
+    return FIELDS.every(f => values[f.id] !== '' && !Number.isNaN(parseFloat(values[f.id])));
+  }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    const back   = parseFloat(e.target.elements.espalda.value);
-    const height = parseFloat(e.target.elements.altura.value);
-    const weight = parseFloat(e.target.elements.peso.value);
-    const age    = parseFloat(e.target.elements.edad.value);
+    setTouched({ espalda: true, altura: true, peso: true, edad: true });
+    if (!isFormValid()) return;
+
+    const back   = parseFloat(values.espalda);
+    const height = parseFloat(values.altura);
+    const weight = parseFloat(values.peso);
+    const age    = parseFloat(values.edad);
 
     setStep('loading');
     setErrorMsg('');
@@ -101,41 +157,18 @@ function UsizeForm() {
         </div>
       )}
 
-      <form className="measurement-form" onSubmit={handleSubmit}>
-        <div className="field-group">
-          <label className="field-label" htmlFor="espalda">{t('back')}</label>
-          <div className="field-input-wrap">
-            <input id="espalda" type="number" name="espalda" className="field-input"
-              placeholder="42" min="30" max="80" required />
-            <span className="field-unit">cm</span>
-          </div>
-        </div>
-
-        <div className="field-group">
-          <label className="field-label" htmlFor="altura">{t('height')}</label>
-          <div className="field-input-wrap">
-            <input id="altura" type="number" name="altura" className="field-input"
-              placeholder="170" min="140" max="220" required />
-            <span className="field-unit">cm</span>
-          </div>
-        </div>
-
-        <div className="field-group">
-          <label className="field-label" htmlFor="peso">{t('weight')}</label>
-          <div className="field-input-wrap">
-            <input id="peso" type="number" name="peso" className="field-input"
-              placeholder="70" min="40" max="150" required />
-            <span className="field-unit">kg</span>
-          </div>
-        </div>
-
-        <div className="field-group">
-          <label className="field-label" htmlFor="edad">{t('age')}</label>
-          <div className="field-input-wrap">
-            <input id="edad" type="number" name="edad" className="field-input"
-              placeholder="28" min="15" max="80" required />
-            <span className="field-unit">{t('ageUnit')}</span>
-          </div>
+      <form className="measurement-form" onSubmit={handleSubmit} noValidate>
+        <div className="field-grid">
+          {FIELDS.map(field => (
+            <FieldInput
+              key={field.id}
+              field={field}
+              value={values[field.id]}
+              touched={!!touched[field.id]}
+              onChange={handleFieldChange}
+              onBlur={handleFieldBlur}
+            />
+          ))}
         </div>
 
         <button type="submit" className="btn-primary" disabled={isLoading}>
@@ -145,6 +178,10 @@ function UsizeForm() {
             <><FontAwesomeIcon icon={faRulerCombined} /> {t('predict')}</>
           )}
         </button>
+
+        <p className="form-trust-note">
+          <FontAwesomeIcon icon={faShieldHalved} /> {t('privacyNote')}
+        </p>
       </form>
     </div>
   );

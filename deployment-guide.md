@@ -4,10 +4,13 @@
 
 > **Replace every placeholder** (`yourdomain.com`, `your-frontend-bucket`, `YOUR_ACCOUNT_ID`, etc.) with your own values before running any command. Nothing here will work verbatim.
 
+> **New to AWS?** This guide doubles as study material for the **AWS Certified Cloud Practitioner (CLF-C02)** exam — every acronym is expanded on first use, and there's a glossary plus exam-relevant callouts (marked 📘) at the exact points in this guide where each concept concretely shows up. Start with the [AWS Concepts Glossary](#aws-concepts-glossary-study-companion) below.
+
 ---
 
 ## Table of Contents
 
+0. [AWS Concepts Glossary (study companion)](#aws-concepts-glossary-study-companion)
 1. [Overview](#1-overview)
 2. [Prerequisites](#2-prerequisites)
 3. [Build](#3-build)
@@ -19,6 +22,34 @@
 9. [Post-Deployment Verification](#9-post-deployment-verification)
 10. [Cost Estimate](#10-cost-estimate)
 11. [Troubleshooting](#11-troubleshooting)
+
+---
+
+## AWS Concepts Glossary (study companion)
+
+This frontend deploy only touches a handful of AWS services, but they're a genuinely good slice of the **Cloud Technology and Services** and **Security and Compliance** domains on the CLF-C02 exam — a static site is one of the simplest real architectures you can build, so it's a clean way to learn these services without a database/compute layer muddying the picture.
+
+### Service acronyms used in this guide
+
+| Acronym | Full name | What it actually is | Where it shows up here |
+|---|---|---|---|
+| **S3** | **S**imple **S**torage **S**ervice | Object storage — files ("objects") live in "buckets," not a filesystem or database. No server to patch or manage; AWS handles durability and scaling for you | Holds the built `build/` folder — every HTML/CSS/JS file this app ships is just an object in one S3 bucket ([Section 4](#4-create-the-s3-bucket)) |
+| **CloudFront** | (a CDN — Content Delivery Network; not itself an acronym) | Caches your content at edge locations physically close to visitors worldwide, and terminates HTTPS, so a shopper in Tokyo isn't fetching your JS bundle from a server in Virginia | Sits in front of the S3 bucket, serving the app over HTTPS with edge caching and the `/api/*` path-routing behavior ([Section 5](#5-cloudfront-distribution)) |
+| **OAC** | **O**rigin **A**ccess **C**ontrol | The mechanism that lets a *private* S3 bucket be read only by *your specific* CloudFront distribution — not the public internet, not even you directly via a bucket URL | The reason the S3 bucket in [Section 4](#4-create-the-s3-bucket) can have zero public access yet still serve the site through CloudFront |
+| **Route 53** | (named for DNS's port **53**, not an acronym) | AWS's DNS service — translates `app.yourdomain.com` into the actual CloudFront distribution it should route to | Owns the `app.yourdomain.com` alias record pointed at CloudFront ([Section 6](#6-domain--ssl)) |
+| **ACM** | AWS **C**ertificate **M**anager | Issues and auto-renews free TLS/SSL certificates — no manual renewal, unlike a self-managed Let's Encrypt cert | Provides the certificate CloudFront uses to serve `https://app.yourdomain.com` ([Section 6](#6-domain--ssl)) |
+| **CLI** | **C**ommand **L**ine **I**nterface | A terminal program (`aws ...`) that does anything the AWS Console does, scriptably | Every `aws s3`/`aws cloudfront`/`aws acm`/`aws route53` command in this guide |
+| **TLS / SSL** | **T**ransport **L**ayer **S**ecurity / **S**ecure **S**ockets **L**ayer (SSL is the deprecated predecessor name; "SSL cert" colloquially still means a TLS cert) | The encryption protocol behind `https://` | What the ACM certificate in [Section 6](#6-domain--ssl) enables |
+| **CDN** | **C**ontent **D**elivery **N**etwork | A geographically distributed network of caching servers ("edge locations") that sit between your origin and your visitors | What CloudFront *is* — see above |
+
+### Core cloud concepts you'll actually see applied here
+
+- **Regional vs. Global services** — the S3 bucket is **regional** (you pick `us-east-1` or wherever, and it only exists there). CloudFront, by contrast, is **global**: one distribution, but it *runs* at edge locations on every continent. The one quirk that trips people up: the ACM certificate for CloudFront must be requested in **`us-east-1` specifically**, even if your bucket lives in a different region — see the callout in [Section 5](#5-cloudfront-distribution).
+- **Durability vs. Availability** — S3 is built for **11 nines (99.999999999%) durability**, meaning the odds of losing an object are vanishingly small because AWS stores redundant copies across multiple facilities. That's a different promise than *availability* (can you reach it right now) — a private bucket with zero public access, as configured in [Section 4](#4-create-the-s3-bucket), is still exactly as durable; only *how* it's reachable changed.
+- **CDN / edge caching** — the entire reason [Section 5](#5-cloudfront-distribution) exists instead of just pointing the domain straight at S3: CloudFront caches your fingerprinted static assets at edge locations near each visitor, so repeat page loads are fast regardless of where in the world the visitor is, without you running any extra infrastructure.
+- **Pricing models** — every cost in [Section 10](#10-cost-estimate) is **On-Demand** — no reserved capacity, no upfront commitment, pay only for what's actually stored/served. There's no compute here to reserve in the first place (no EC2/RDS), which is a big part of why this piece of the stack is so cheap.
+- **CapEx vs. OpEx** — no server was bought to serve this site; you're paying a small, usage-based operating cost (S3 storage + CloudFront requests) instead of a capital purchase. This is the classic "why cloud" pitch in its simplest possible form, since there's no compute layer to add nuance.
+- **Well-Architected Framework pillars** — two show up clearly in this guide: *Security* (private S3 bucket + OAC instead of the legacy public "static website hosting" bucket policy, [Section 4](#4-create-the-s3-bucket)) and *Cost Optimization* (CloudFront's free tier is generous and *perpetual*, not a 12-month trial like most AWS free tiers — see [Section 2](#2-prerequisites)).
 
 ---
 
@@ -132,6 +163,8 @@ aws s3api put-public-access-block \
 
 This bucket has **no public access** at all — CloudFront's Origin Access Control (configured in the next section) is the only thing allowed to read it. Do not attach a public bucket policy or enable the legacy "static website hosting" feature.
 
+> 📘 **CCP tip — Security pillar in practice:** older tutorials have you flip on S3 "static website hosting" and attach a public-read bucket policy. This guide deliberately doesn't — a private bucket readable only via OAC has a strictly smaller attack surface (no direct public S3 URL exists at all), which is exactly the kind of "default to the more secure option unless there's a reason not to" reasoning the exam expects for the Well-Architected Framework's Security pillar.
+
 ---
 
 ## 5. CloudFront Distribution
@@ -142,6 +175,8 @@ This bucket has **no public access** at all — CloudFront's Origin Access Contr
 4. **Viewer protocol policy:** Redirect HTTP to HTTPS.
 5. **Alternate domain name (CNAME):** `app.yourdomain.com`.
 6. **Custom SSL certificate:** request this in ACM first — see [Section 6](#6-domain--ssl). **Must be in `us-east-1`**, regardless of which region the rest of your stack lives in — CloudFront only accepts certs from that region.
+
+   > 📘 **CCP tip — regional vs. global:** this is the single most-tested "gotcha" version of the regional/global distinction. CloudFront itself is global, but the ACM certificate it uses must specifically be requested in the `us-east-1` region — request it anywhere else and it simply won't show up in CloudFront's certificate picker, even though your S3 bucket can happily live in a completely different region.
 7. **Error pages** — configured as a safety net, even though `HashRouter` client-side routes (fragments after `#`) never reach the server, so this isn't strictly required for routing to work:
    - HTTP error code `403` → Response page path `/index.html`, HTTP response code `200`.
    - HTTP error code `404` → Response page path `/index.html`, HTTP response code `200`.
@@ -269,6 +304,8 @@ Approximate **us-east-1** monthly cost for just this component (S3 + CloudFront)
 | **Estimated total** | **~$0–1/mo** | **~$1–3/mo** |
 
 No EC2 or RDS is needed for this piece — those costs belong to the backend's deployment, not this one.
+
+> 📘 **CCP tip — On-Demand pricing, and why this is so cheap:** there's no reserved capacity or commitment anywhere in this bill — you're billed purely for GB stored and requests served, which is why a low-traffic static site costs next to nothing. This is the simplest possible illustration of AWS's core billing idea: pay for what you actually use, not for capacity you provisioned "just in case."
 
 ---
 

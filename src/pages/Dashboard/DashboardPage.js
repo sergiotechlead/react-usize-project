@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faGauge, faBrain, faCode, faPalette,
@@ -25,6 +25,12 @@ import { useAuth, apiFetch } from '../../context/AuthContext';
 import { DEFAULT_INPUT_DATA, DEFAULT_LABELS, SIZE_LABELS, trainModel, parseExcelRows, getModelStorageKey } from '../../ml/modelConfig';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { usePageTitle } from '../../hooks/usePageTitle';
+import {
+  StatCardsSkeleton, SizeDistSkeleton, PerModelOverviewSkeleton,
+  ModelCardGridSkeleton, IntegrationSkeleton, CustomizationSkeleton,
+  PlanSkeleton, TeamSkeleton,
+} from './DashboardSkeleton';
+import { DASHBOARD_SLUG_BY_ID, DASHBOARD_ID_BY_SLUG } from './dashboardSections';
 import './DashboardPage.css';
 
 const NAV_ICONS = [faGauge, faBrain, faCode, faPalette, faCreditCard, faIdCard];
@@ -45,13 +51,17 @@ function downloadTemplate() {
 function StatCards() {
   const { t } = useTranslation('dashboard');
   const [stats, setStats] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     apiFetch('/analytics/overview')
       .then(r => r.ok ? r.json() : null)
       .then(data => { if (data) setStats(data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <StatCardsSkeleton />;
 
   const STAT_CARDS = stats
     ? [
@@ -88,14 +98,18 @@ function StatCards() {
 function SizeDistChart() {
   const { t } = useTranslation('dashboard');
   const [dist, setDist] = useState([]);
+  const [loading, setLoading] = useState(true);
   const COLORS = { XS: '#c084fc', S: 'var(--color-accent)', M: '#7ab8fa', L: '#5db35d', XL: '#ef7b7b', XXL: '#f59e0b' };
 
   useEffect(() => {
     apiFetch('/predictions/distribution')
       .then(r => r.ok ? r.json() : [])
       .then(data => { if (Array.isArray(data) && data.length > 0) setDist(data); })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
+
+  if (loading) return <SizeDistSkeleton />;
 
   const display = dist.length > 0 ? dist : [
     { size: 'XS', pct: 5 }, { size: 'S', pct: 15 }, { size: 'M', pct: 30 },
@@ -124,6 +138,7 @@ function PerModelOverview() {
   const { t } = useTranslation('dashboard');
   const [models, setModels] = useState([]);
   const [distByModel, setDistByModel] = useState({}); // { [modelId]: [{size, count, pct}, ...] }
+  const [loading, setLoading] = useState(true);
   const COLORS = { XS: '#c084fc', S: 'var(--color-accent)', M: '#7ab8fa', L: '#5db35d', XL: '#ef7b7b', XXL: '#f59e0b' };
 
   useEffect(() => {
@@ -138,9 +153,11 @@ function PerModelOverview() {
         }));
         setDistByModel(Object.fromEntries(entries));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
+  if (loading) return <PerModelOverviewSkeleton />;
   if (models.length === 0) return null;
 
   return (
@@ -975,7 +992,9 @@ function ModelSection({ user }) {
             )}
           </div>
 
-          {models.length > 0 ? (
+          {maxModels === null ? (
+            <ModelCardGridSkeleton />
+          ) : models.length > 0 ? (
             <DndContext
               sensors={modelDndSensors}
               collisionDetection={closestCenter}
@@ -1165,17 +1184,19 @@ function IntegrationSection({ user }) {
   const [newKey, setNewKey]         = useState(null);
   const [copied, setCopied]         = useState(false);
   const [copiedKey, setCopiedKey]   = useState(false);
+  const [loaded, setLoaded]         = useState(false);
 
   useEffect(() => {
-    apiFetch('/api-keys')
-      .then(r => r.ok ? r.json() : [])
-      .then(data => { if (Array.isArray(data)) setApiKeys(data); })
-      .catch(() => {});
-
-    apiFetch('/models')
-      .then(r => r.ok ? r.json() : [])
-      .then(data => { if (Array.isArray(data)) setModels(data); })
-      .catch(() => {});
+    Promise.all([
+      apiFetch('/api-keys').then(r => r.ok ? r.json() : []),
+      apiFetch('/models').then(r => r.ok ? r.json() : []),
+    ])
+      .then(([keysData, modelsData]) => {
+        if (Array.isArray(keysData)) setApiKeys(keysData);
+        if (Array.isArray(modelsData)) setModels(modelsData);
+      })
+      .catch(() => {})
+      .finally(() => setLoaded(true));
   }, []);
 
   async function handleAssignModel(keyId, modelId) {
@@ -1242,6 +1263,8 @@ function IntegrationSection({ user }) {
     setCopiedKey(true);
     setTimeout(() => setCopiedKey(false), 2000);
   }
+
+  if (!loaded) return <IntegrationSkeleton />;
 
   return (
     <div className="section-content">
@@ -1584,7 +1607,7 @@ function CustomizationSection({ user }) {
   }
 
   if (!loaded) {
-    return <div className="section-content"><p className="card-hint" role="status">…</p></div>;
+    return <CustomizationSkeleton />;
   }
 
   if (apiKeys.length === 0) {
@@ -1801,7 +1824,7 @@ function PlanSection() {
     refreshUser({ plan: 'starter' });
   }
 
-  if (!loaded) return <div className="section-content"><p className="card-hint" role="status">…</p></div>;
+  if (!loaded) return <PlanSkeleton />;
 
   const currentPlanName = sub?.plan?.name;
   const renewsOn = sub && sub.status === 'active'
@@ -2159,7 +2182,7 @@ function TeamSection({ user }) {
   }
 
   if (!loaded) {
-    return <div className="section-content"><p className="card-hint" role="status">…</p></div>;
+    return <TeamSkeleton />;
   }
 
   if (!org) {
@@ -2345,8 +2368,20 @@ function TeamSection({ user }) {
 export default function DashboardPage() {
   const { user, logout } = useAuth();
   const navigate         = useNavigate();
+  const location         = useLocation();
   const { t }            = useTranslation('dashboard');
-  const [activeTab, setActiveTab] = useState('overview');
+
+  // The active section lives in the URL (/dashboard-<slug>), not local state,
+  // so each tab is its own bookmarkable/shareable/back-button-able route.
+  // An unrecognized or bare slug (shouldn't normally happen — App.js only
+  // registers known routes and redirects /dashboard itself) falls back to
+  // Overview rather than rendering nothing.
+  const currentSlug = location.pathname.replace(/^\/dashboard-/, '');
+  const activeTab = DASHBOARD_ID_BY_SLUG[currentSlug] || 'overview';
+
+  function goToSection(id) {
+    navigate(`/dashboard-${DASHBOARD_SLUG_BY_ID[id]}`);
+  }
 
   const isEnterprise = (user?.plan || '').toLowerCase() === 'enterprise';
   const navIds   = isEnterprise ? [...NAV_IDS, 'team']   : NAV_IDS;
@@ -2384,7 +2419,7 @@ export default function DashboardPage() {
               <button
                 key={id}
                 className={`sidebar-item${activeTab === id ? ' active' : ''}`}
-                onClick={() => setActiveTab(id)}
+                onClick={() => goToSection(id)}
                 aria-current={activeTab === id ? 'page' : undefined}
               >
                 <FontAwesomeIcon icon={navIcons[i]} className="sidebar-icon" />

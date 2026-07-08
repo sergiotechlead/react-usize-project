@@ -1,0 +1,41 @@
+/* ── Skeleton shimmer primitive ───────────────────────────────────────────── */
+/* Built from the same design tokens as the rest of the dark theme
+   (--color-border / --color-border-dim, see src/App/files/styles-product.css)
+   rather than hardcoded colors, so it matches regardless of any future
+   theme tweak. */
+.skel-box {
+  background: linear-gradient(
+    90deg,
+    var(--color-border-dim) 25%,
+    var(--color-border) 37%,
+    var(--color-border-dim) 63%
+  );
+  background-size: 400% 100%;
+  animation: skel-shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+  display: block;
+}
+
+@keyframes skel-shimmer {
+  0%   { background-position: 100% 50%; }
+  100% { background-position: 0 50%; }
+}
+
+/* ── Sidebar skeleton ─────────────────────────────────────────────────────── */
+.skel-sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+
+.skel-sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+}
+
+/* ── Misc skeleton line helpers ───────────────────────────────────────────── */
+.skel-line { height: 12px; border-radius: var(--radius-sm); }
